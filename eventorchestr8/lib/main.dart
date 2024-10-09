@@ -1,4 +1,5 @@
 import 'package:eventorchestr8/constants/color_scheme.dart';
+import 'package:eventorchestr8/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -19,14 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: darkColorScheme,  
       ),
       debugShowCheckedModeBanner: false,
-      home: const Scaffold(
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text("EventOrchestr8...")
-          ],
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
