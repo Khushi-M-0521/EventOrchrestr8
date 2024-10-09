@@ -2,7 +2,7 @@
 // These ColorScheme objects require Flutter 3.7 or later.
 import 'package:flutter/material.dart';
 
-const ColorScheme light = ColorScheme(
+const ColorScheme lightColorScheme = ColorScheme(
   brightness: Brightness.light,
   primary: Color(0xff5f0087),
   onPrimary: Color(0xffffffff),
@@ -36,7 +36,7 @@ const ColorScheme light = ColorScheme(
   surfaceTint: Color(0xff5f0087),
 );
 
-const ColorScheme dark = ColorScheme(
+const ColorScheme darkColorScheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Color(0xff800aee),
   onPrimary: Color(0xfff8efff),
