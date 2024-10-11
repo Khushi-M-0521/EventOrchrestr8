@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData.light().copyWith(
         colorScheme: lightColorScheme,  
+        scaffoldBackgroundColor: Colors.white
       ),
       darkTheme: ThemeData.dark().copyWith(
         colorScheme: darkColorScheme,  
