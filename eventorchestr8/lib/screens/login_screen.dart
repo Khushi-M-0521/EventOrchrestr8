@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget filledButton(String text) {
-    return FilledButton(
+    return RoundedButton(
       onPressed: swap,
       child: Text(text),
     );
@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton(
+                    child: RoundedButton(
                       onPressed: () {},
                       child: const Text("VERIFY"),
                     ),

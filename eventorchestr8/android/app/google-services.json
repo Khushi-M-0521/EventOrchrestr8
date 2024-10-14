@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "423730072177",
+    "project_id": "eventorchestr8-ae891",
+    "storage_bucket": "eventorchestr8-ae891.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:423730072177:android:b6da2cf1390811ece169d0",
+        "android_client_info": {
+          "package_name": "com.example.eventorchestr8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA09ne4F19UVGbCzHC2q1TrhB3XW8q3BMo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
