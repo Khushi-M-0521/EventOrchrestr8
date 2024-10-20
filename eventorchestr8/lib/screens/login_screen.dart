@@ -1,9 +1,11 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:eventorchestr8/provider/auth_provider.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:eventorchestr8/widgets/subtitle_text.dart';
 import 'package:eventorchestr8/widgets/title_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,6 +49,12 @@ class _LoginScreenState extends State<LoginScreen> {
       onPressed: swap,
       child: Text(text),
     );
+  }
+
+  void sendPhoneNumber(){
+    final authProvider=Provider.of<AuthProvider>(context,listen:false);
+    String phoneNumber = phoneController.text.trim();
+    authProvider.sigInWithPhone(context, "+${selectedCountry.phoneCode}$phoneNumber");
   }
 
   @override
@@ -202,7 +210,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: RoundedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        sendPhoneNumber();
+                      },
                       child: const Text("VERIFY"),
                     ),
                   ),
