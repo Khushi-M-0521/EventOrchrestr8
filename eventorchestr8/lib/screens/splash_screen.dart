@@ -20,16 +20,18 @@ class _SplashScreenState extends State<SplashScreen> {
     final p = Provider.of<AuthProvider>(context, listen: false);
     Timer(
         const Duration(seconds: 3),
-        () => Navigator.of(context).push(
+        () => Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                   builder: (context) => p.isSignedIn //if true get shared preference data
                       ? const HomeScreen()
                       : const OnboardingScreen()),
+              (route)=>false,
             ));
   }
 
   @override
   Widget build(BuildContext context) {
+    //TODO: replace with splash screen
     return const OnboardingScreen();
   }
 }

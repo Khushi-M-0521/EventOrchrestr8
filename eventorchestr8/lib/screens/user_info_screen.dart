@@ -102,6 +102,21 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         userDetailModel: userDetailModel,
       );
     }
+    else{
+      ap.saveUserCredentialDataToFirebase(
+        context: context,
+        userCredentialModel: userCredentialModel,
+        onSuccess: () {
+          //store data locally
+          ap.saveUserDataToSP().then((value) => ap.setSignIn().then((value) =>
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (context) => const HomeScreen()),
+                  (route) => false)));
+        },
+        userDetailModel: userDetailModel,
+      );
+    }
   }
 
   void selectImage() async {

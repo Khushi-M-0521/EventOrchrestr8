@@ -31,7 +31,10 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: ThemeData.light().copyWith(
           colorScheme: lightColorScheme,  
-          scaffoldBackgroundColor: Colors.white
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: AppBarTheme.of(context).copyWith(
+            backgroundColor: Colors.white,
+          )
         ),
         darkTheme: ThemeData.dark().copyWith(
           colorScheme: darkColorScheme,  
