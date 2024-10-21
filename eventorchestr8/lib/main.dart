@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           appBarTheme: AppBarTheme.of(context).copyWith(
             backgroundColor: Colors.white,
+            elevation: 2,
           )
         ),
         darkTheme: ThemeData.dark().copyWith(

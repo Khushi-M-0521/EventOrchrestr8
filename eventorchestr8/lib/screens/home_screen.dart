@@ -1,3 +1,4 @@
+import 'package:eventorchestr8/screens/my_communities_screen.dart';
 import 'package:eventorchestr8/screens/explore_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,13 +14,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     ExploreScreen(),
-    const Text('Communities: My Own and Registered Communities'),
+    MyCommunitiesScreen(),
     const Text('My Registered Events'),
   ];
 
   static final List<AppBar> _appBarOptions = <AppBar>[
     //ExploreScreen.appBar(),
     AppBar(
+      toolbarHeight: 40,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -41,7 +43,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     AppBar(
-        title: const Text('Communities'),
+        title: Text(
+               "Communities",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            toolbarHeight: 30,
       ),
     AppBar(
         title: const Text('MyEvents'),
@@ -69,11 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
-            label: 'Communities',
+            label: 'My Communities',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event),
-            label: 'Events',
+            label: 'Upcoming Events',
           ),
         ],
         currentIndex: _selectedIndex,

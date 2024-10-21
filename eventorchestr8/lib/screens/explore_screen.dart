@@ -64,27 +64,37 @@ class _ExploreScreenState extends State<ExploreScreen> {
             .compareTo(a["peopleRegistered"] as int),
       );
     }
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        flexibleSpace: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              FilledButton.icon(
-                icon: Icon(Icons.group),
-                label: Text("Communities"),
+              TextButton.icon(
+                icon: Icon(
+                  Icons.group,
+                  color: isCommunity
+                      ? null
+                      : Theme.of(context).colorScheme.secondaryContainer,
+                ),
+                label: Text(
+                  "Communities",
+                  style: TextStyle(
+                    color: isCommunity
+                        ? null
+                        : Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+                ),
                 onPressed: () {
                   setState(() {
                     isCommunity = true;
                   });
                 },
               ),
-              const SizedBox(
-                width: 30,
-              ),
-              FilledButton.icon(
-                icon: Icon(Icons.event),
-                label: Text("Events"),
+              TextButton.icon(
+                icon: Icon(Icons.event,color: !isCommunity?null:Theme.of(context).colorScheme.secondaryContainer,),
+                label: Text("Events",style: TextStyle(color: !isCommunity?null:Theme.of(context).colorScheme.secondaryContainer,),),
                 onPressed: () {
                   setState(() {
                     isCommunity = false;
@@ -93,90 +103,101 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             ],
           ),
-          Padding(
-            padding: EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
+        ),
+        toolbarHeight: 40,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  labelText: 'Search',
+                  prefixIcon: Icon(Icons.search),
                 ),
-                labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              "Popuplar ${isCommunity ? "Community" : "Event"}",
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                "Popuplar ${isCommunity ? "Community" : "Event"}",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 150,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: 5, // Ensure at least 5 items for demo
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: InkWell(
+                      onTap: () {},
+                      child: isCommunity
+                          ? PopularCommunityCard(
+                              imageUrl: popular[index]["imageUrl"] as String,
+                              name: popular[index]["name"] as String,
+                              tagline: popular[index]["tagline"] as String,
+                              membersCount: popular[index]["members"] as int,
+                            )
+                          : PopularEventCard(
+                              imageUrl: popular[index]["imageUrl"] as String,
+                              title: popular[index]["title"] as String,
+                              location: popular[index]["location"] as String,
+                              peopleRegistered:
+                                  popular[index]["peopleRegistered"] as int,
+                              dateTime: popular[index]["dateTime"] as int,
+                            ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Text(
+              "All ${isCommunity ? "Communities" : "Events"}",
               style: TextStyle(
                 fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-          SizedBox(
-            height: 150,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: 5, // Ensure at least 5 items for demo
+            ListView.builder(
+              physics:
+                  NeverScrollableScrollPhysics(), // Prevent nested scrolling conflicts
+              shrinkWrap: true,
+              itemCount:
+                  list.length, // Replace with the actual number of communities or events
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: InkWell(
-                    onTap: () {},
-                    child: isCommunity
-                        ? PopularCommunityCard(
-                            imageUrl: popular[index]["imageUrl"] as String,
-                            name: popular[index]["name"] as String,
-                            tagline: popular[index]["tagline"] as String,
-                            membersCount: popular[index]["members"] as int,
-                          )
-                        : PopularEventCard(
-                            imageUrl: popular[index]["imageUrl"] as String,
-                            title: popular[index]["title"] as String,
-                            location: popular[index]["location"] as String,
-                            peopleRegistered:
-                                popular[index]["peopleRegistered"] as int,
-                            dateTime: popular[index]["dateTime"] as int,
-                          ),
-                  ),
+                return InkWell(
+                  onTap: () {},
+                  child: isCommunity
+                      ? CommunityListTile(
+                          imageUrl: list[index]["imageUrl"] as String,
+                          name: list[index]["name"] as String,
+                          tagline: list[index]["tagline"] as String,
+                          membersCount: list[index]["members"] as int,
+                        )
+                      : EventListTile(
+                          imageUrl: list[index]["imageUrl"] as String,
+                          title: list[index]["title"] as String,
+                          location: list[index]["location"] as String,
+                          peopleRegistered:
+                              list[index]["peopleRegistered"] as int,
+                          dateTime: list[index]["dateTime"] as int,
+                        ),
                 );
               },
             ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Text(
-            "All ${isCommunity ? "Communities" : "Events"}",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          ListView.builder(
-            physics:
-                NeverScrollableScrollPhysics(), // Prevent nested scrolling conflicts
-            shrinkWrap: true,
-            itemCount:
-                10, // Replace with the actual number of communities or events
-            itemBuilder: (context, index) {
-              return isCommunity
-                  ? CommunityListTile(
-                      imageUrl: list[index]["imageUrl"] as String,
-                      name: list[index]["name"] as String,
-                      tagline: list[index]["tagline"] as String,
-                      membersCount: list[index]["members"] as int,
-                    )
-                  : EventListTile(
-                      imageUrl: list[index]["imageUrl"] as String,
-                      title: list[index]["title"] as String,
-                      location: list[index]["location"] as String,
-                      peopleRegistered: list[index]["peopleRegistered"] as int,
-                      dateTime: list[index]["dateTime"] as int,
-                    );
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
