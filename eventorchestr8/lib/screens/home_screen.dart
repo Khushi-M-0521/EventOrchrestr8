@@ -1,5 +1,6 @@
 import 'package:eventorchestr8/screens/my_communities_screen.dart';
 import 'package:eventorchestr8/screens/explore_screen.dart';
+import 'package:eventorchestr8/screens/my_events_screen.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     ExploreScreen(),
     MyCommunitiesScreen(),
-    const Text('My Registered Events'),
+    MyEventsScreen(),
   ];
 
   static final List<AppBar> _appBarOptions = <AppBar>[
@@ -53,7 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
             toolbarHeight: 30,
       ),
     AppBar(
-        title: const Text('MyEvents'),
+         title: Text(
+               "My Events",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            toolbarHeight: 30,
       ),
   ];
 
