@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/models/user_credential.dart';
 import 'package:eventorchestr8/models/user_details.dart';
@@ -13,14 +12,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isSignedIn = false;
+
   bool get isSignedIn => _isSignedIn;
   bool _isLoading = false;
+
   bool get isLoading => _isLoading;
   String? _uid;
+
   String get uid => _uid!;
   UserCredentialModel? _userCredentialModel;
+
   UserCredentialModel get userCredentialModel => _userCredentialModel!;
   UserDetailModel? _userDetailModel;
+
   UserDetailModel get userDetailModel => _userDetailModel!;
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -37,9 +41,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future setSignIn() async{
+  Future setSignIn() async {
     final SharedPreferences s = await SharedPreferences.getInstance();
-    s.setBool("is_signedin",true);
+    s.setBool("is_signedin", true);
     _isSignedIn = true;
     notifyListeners();
   }
@@ -114,10 +118,73 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> signInWithPhoneAndPassword({
+    required BuildContext context,
+    required String phoneNumber,
+    required String password,
+    required Function onSuccess,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Fetch user data using the phone number
+      QuerySnapshot querySnapshot = await _firebaseFirestore
+          .collection("users")
+          .where("phoneNumber", isEqualTo: phoneNumber)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        _isLoading = false;
+        notifyListeners();
+        showSnackBar(context, "Phone number not found");
+        return;
+      }
+
+      // Assuming there's only one document
+      DocumentSnapshot userDoc = querySnapshot.docs.first;
+      print(userDoc.data());
+      Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
+      // Verify the password stored in Firestore
+      print(data);
+      String? storedPassword = data?['password'];
+      print(storedPassword);
+
+      if (storedPassword == password) {
+        // Successful login
+        _uid = userDoc['uid'];
+        _userCredentialModel =
+            UserCredentialModel.fromMap(userDoc.data() as Map<String, dynamic>);
+        _userDetailModel = UserDetailModel.fromMap(
+          (await _firebaseFirestore.collection("user_details").doc(_uid).get())
+              .data()!,
+        );
+
+        // Save user data locally
+        await saveUserDataToSP();
+
+        // Call onSuccess callback
+        onSuccess();
+      } else {
+        _isLoading = false;
+        notifyListeners();
+        showSnackBar(context, "Incorrect password");
+      }
+
+      _isLoading = false;
+      notifyListeners();
+    } on FirebaseAuthException catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      showSnackBar(context, e.message.toString());
+    }
+  }
+
   void saveUserCredentialDataToFirebase({
     required BuildContext context,
     required UserCredentialModel userCredentialModel,
     required UserDetailModel userDetailModel,
+    required String password, // Add this password field
     required Function onSuccess,
     File? profilePicture,
   }) async {
@@ -130,19 +197,29 @@ class AuthProvider extends ChangeNotifier {
           userDetailModel.profilePicture = value;
         });
       }
-      userCredentialModel.createdAt=DateTime.now().microsecondsSinceEpoch.toString();
-      userCredentialModel.phoneNumber=_firebaseAuth.currentUser!.phoneNumber;
-      userCredentialModel.email=_firebaseAuth.currentUser!.email;
-      userCredentialModel.uid=_firebaseAuth.currentUser!.uid;
-      userDetailModel.uid=_firebaseAuth.currentUser!.uid;
-      _userCredentialModel=userCredentialModel;
-      _userDetailModel=userDetailModel;
-      
-      //uploading to db
-      await _firebaseFirestore.collection("users").doc(_uid).set(userCredentialModel.toMap());
-      await _firebaseFirestore.collection("user_details").doc(_uid).set(userDetailModel.toMap()).then((value){
+      userCredentialModel.createdAt =
+          DateTime.now().microsecondsSinceEpoch.toString();
+      userCredentialModel.phoneNumber = _firebaseAuth.currentUser!.phoneNumber;
+      userCredentialModel.email = _firebaseAuth.currentUser!.email;
+      userCredentialModel.uid = _firebaseAuth.currentUser!.uid;
+      userCredentialModel.password = password; // Save the password in Firestore
+
+      userDetailModel.uid = _firebaseAuth.currentUser!.uid;
+      _userCredentialModel = userCredentialModel;
+      _userDetailModel = userDetailModel;
+
+      // Uploading to Firestore
+      await _firebaseFirestore
+          .collection("users")
+          .doc(_uid)
+          .set(userCredentialModel.toMap());
+      await _firebaseFirestore
+          .collection("user_details")
+          .doc(_uid)
+          .set(userDetailModel.toMap())
+          .then((value) {
         onSuccess();
-        _isLoading=false;
+        _isLoading = false;
         notifyListeners();
       });
     } on FirebaseAuthException catch (e) {
@@ -160,9 +237,41 @@ class AuthProvider extends ChangeNotifier {
   }
 
   //storing data locally
-  Future saveUserDataToSP()async{
-    SharedPreferences s=await SharedPreferences.getInstance();
-    await s.setString("user_credential_model", jsonEncode(userCredentialModel.toMap()));
+  Future saveUserDataToSP() async {
+    SharedPreferences s = await SharedPreferences.getInstance();
+    await s.setString(
+        "user_credential_model", jsonEncode(userCredentialModel.toMap()));
     await s.setString("user_detail_model", jsonEncode(userDetailModel.toMap()));
+  }
+
+  Future<void> signInWithEmailAndPassword({
+    required BuildContext context,
+    required String email,
+    required String password,
+    required Function onSuccess,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      UserCredential userCredential =
+          await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (userCredential.user != null) {
+        _uid = userCredential.user!.uid;
+        await setSignIn(); // Make sure to set sign-in state
+        onSuccess(); // Call the success callback
+      }
+
+      _isLoading = false;
+      notifyListeners();
+    } on FirebaseAuthException catch (e) {
+      _isLoading = false;
+      showSnackBar(context, e.message.toString());
+      notifyListeners();
+    }
   }
 }

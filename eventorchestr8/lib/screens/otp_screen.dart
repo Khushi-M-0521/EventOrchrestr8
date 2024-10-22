@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:eventorchestr8/provider/auth_provider.dart';
+import 'package:eventorchestr8/screens/signin.dart';
 import 'package:eventorchestr8/screens/user_info_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
@@ -19,23 +20,21 @@ class OTPScreen extends StatefulWidget {
 
 class _OTPScreenState extends State<OTPScreen> {
   String? otpCode;
-  int forTime=120;
-  bool verifying=false;
+  int forTime = 120;
+  bool verifying = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    Timer.periodic(const Duration(seconds: 1), (timer){
-      if(forTime>0){
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (forTime > 0) {
         setState(() {
-        forTime--;
-      });
-      }
-      else{
-        mounted && !verifying? Navigator.of(context).pop():null;
+          forTime--;
+        });
+      } else {
+        mounted && !verifying ? Navigator.of(context).pop() : null;
       }
     });
-    
   }
 
   void verifyOtp(BuildContext context, String userOtp) {
@@ -45,11 +44,20 @@ class _OTPScreenState extends State<OTPScreen> {
       verficationId: widget.verificationId,
       userOtp: userOtp,
       onSuccess: () {
-        ap.checkExixtingUser().then((value) async{
-          if(value){
+        ap.checkExixtingUser().then((value) async {
+          if (value) {
             //user exits in our app
-          }else{
-            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context)=>const UserInfoScreen()), (route)=>false);
+            print("existing prend");
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("User Already exists")),
+            );
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const SignInScreen()),
+                (route) => false);
+          } else {
+            Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const UserInfoScreen()),
+                (route) => false);
           }
         });
       },
@@ -72,7 +80,7 @@ class _OTPScreenState extends State<OTPScreen> {
               ),
             )
           : SingleChildScrollView(
-            child: Padding(
+              child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -81,7 +89,8 @@ class _OTPScreenState extends State<OTPScreen> {
                     const FadeInImage(
                       placeholder:
                           AssetImage('./assets/images/phone_verification.png'),
-                      image: AssetImage('./assets/images/phone_verification.png'),
+                      image:
+                          AssetImage('./assets/images/phone_verification.png'),
                       fit: BoxFit.cover,
                       height: 200,
                       width: 200,
@@ -146,15 +155,17 @@ class _OTPScreenState extends State<OTPScreen> {
                       TextSpan(children: [
                         TextSpan(
                           text: "OTP valid until ",
-                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                color: Colors.grey,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                    color: Colors.grey,
+                                  ),
                         ),
                         TextSpan(
                           text: "$forTime seconds",
-                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                color: Colors.blue,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                    color: Colors.blue,
+                                  ),
                         )
                       ]),
                     ),
@@ -164,8 +175,8 @@ class _OTPScreenState extends State<OTPScreen> {
                         onPressed: () {
                           if (otpCode != null) {
                             setState(() {
-                              forTime=2;
-                              verifying=true;
+                              forTime = 2;
+                              verifying = true;
                             });
                             verifyOtp(context, otpCode!);
                           } else {
@@ -178,7 +189,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   ],
                 ),
               ),
-          ),
+            ),
     );
   }
 }

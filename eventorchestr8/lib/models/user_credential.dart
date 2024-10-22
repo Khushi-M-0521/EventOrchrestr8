@@ -3,7 +3,7 @@ class UserCredentialModel {
   String createdAt;
   String? email;
   String? phoneNumber;
-  int password;
+  String? password;
 
   UserCredentialModel(
       {required this.uid,

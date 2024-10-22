@@ -78,7 +78,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       createdAt: "",
       email: "",
       phoneNumber: "",
-      password: passwordController.text.hashCode,
+      password: passwordController.text,
     );
     UserDetailModel userDetailModel = UserDetailModel(
       uid: "",
@@ -94,15 +94,14 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           //store data locally
           ap.saveUserDataToSP().then((value) => ap.setSignIn().then((value) =>
               Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (context) => const HomeScreen()),
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
                   (route) => false)));
         },
         profilePicture: image,
         userDetailModel: userDetailModel,
+        password: passwordController.text,
       );
-    }
-    else{
+    } else {
       ap.saveUserCredentialDataToFirebase(
         context: context,
         userCredentialModel: userCredentialModel,
@@ -110,8 +109,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
           //store data locally
           ap.saveUserDataToSP().then((value) => ap.setSignIn().then((value) =>
               Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (context) => const HomeScreen()),
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
                   (route) => false)));
         },
         userDetailModel: userDetailModel,
@@ -213,19 +211,20 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                           width: double.infinity,
                           child: RoundedButton(
                               onPressed: () {
-                                if(nameController.text.length<3){
-                                  showSnackBar(context, "Name must have atleast 3 characters");
-                                }
-                                else if(int.parse(ageController.text)<18){
-                                  showSnackBar(context, "Must have an age of 18");
-                                }
-                                else if(passwordController.text.length<6){
-                                  showSnackBar(context, "Password must have atlest 6 characters");
-                                }
-                                else if(passwordController.text!=confirmPasswordController.text){
-                                  showSnackBar(context, "Confirm password is not same as Password");
-                                }
-                                else{
+                                if (nameController.text.length < 3) {
+                                  showSnackBar(context,
+                                      "Name must have atleast 3 characters");
+                                } else if (int.parse(ageController.text) < 18) {
+                                  showSnackBar(
+                                      context, "Must have an age of 18");
+                                } else if (passwordController.text.length < 6) {
+                                  showSnackBar(context,
+                                      "Password must have atlest 6 characters");
+                                } else if (passwordController.text !=
+                                    confirmPasswordController.text) {
+                                  showSnackBar(context,
+                                      "Confirm password is not same as Password");
+                                } else {
                                   storeData();
                                 }
                               },
