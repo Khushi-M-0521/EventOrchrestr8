@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:eventorchestr8/constants/example_communites.dart';
 import 'package:eventorchestr8/constants/example_events.dart';
+import 'package:eventorchestr8/screens/community_description_screen.dart';
+import 'package:eventorchestr8/screens/event_description.dart';
 import 'package:eventorchestr8/widgets/community_list_card.dart';
 import 'package:eventorchestr8/widgets/event_list_card.dart';
 import 'package:eventorchestr8/widgets/popular_commuty_card.dart';
@@ -139,7 +141,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
                     child: InkWell(
-                      onTap: () {},
+                      onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context)=>
+                    isCommunity?  CommunityDescriptionScreen(community: popular[index],):EventDescriptionScreen()));
+                      },
                       child: isCommunity
                           ? PopularCommunityCard(
                               imageUrl: popular[index]["imageUrl"] as String,
@@ -177,7 +181,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   list.length, // Replace with the actual number of communities or events
               itemBuilder: (context, index) {
                 return InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    isCommunity? Navigator.of(context).push(MaterialPageRoute(builder: (context)=> CommunityDescriptionScreen(community: list[index],))):null;
+                  },
                   child: isCommunity
                       ? CommunityListTile(
                           imageUrl: list[index]["imageUrl"] as String,

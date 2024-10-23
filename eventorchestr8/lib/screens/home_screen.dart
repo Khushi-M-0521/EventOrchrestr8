@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<AppBar> _appBarOptions = <AppBar>[
     //ExploreScreen.appBar(),
     AppBar(
+      
       toolbarHeight: 40,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
