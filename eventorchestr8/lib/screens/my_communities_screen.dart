@@ -1,4 +1,5 @@
 import 'package:eventorchestr8/constants/example_communites.dart';
+import 'package:eventorchestr8/screens/create_event_form.dart';
 import 'package:eventorchestr8/widgets/community_list_card.dart';
 import 'package:flutter/material.dart';
 
@@ -14,11 +15,11 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String,Object>> list=[];
-    if(!isJoined){
-      list=exampleCommunities.sublist(0,4);
-    }else{
-      list=exampleCommunities.sublist(4);
+    List<Map<String, Object>> list = [];
+    if (!isJoined) {
+      list = exampleCommunities.sublist(0, 4);
+    } else {
+      list = exampleCommunities.sublist(4);
     }
 
     return Scaffold(
@@ -64,25 +65,29 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
       floatingActionButton: isJoined
           ? null
           : FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => CreateEventPage()));
+              },
               child: Icon(Icons.add),
             ),
-      floatingActionButtonLocation: isJoined?null:FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation:
+          isJoined ? null : FloatingActionButtonLocation.endFloat,
       body: ListView.builder(
-              itemCount:
-                  list.length, // Replace with the actual number of communities or events
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: (){},
-                  child: CommunityListTile(
-                          imageUrl: list[index]["imageUrl"] as String,
-                          name: list[index]["name"] as String,
-                          tagline: list[index]["tagline"] as String,
-                          membersCount: list[index]["members"] as int,
-                        ),
-                );
-              },
+        itemCount: list
+            .length, // Replace with the actual number of communities or events
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () {},
+            child: CommunityListTile(
+              imageUrl: list[index]["imageUrl"] as String,
+              name: list[index]["name"] as String,
+              tagline: list[index]["tagline"] as String,
+              membersCount: list[index]["members"] as int,
             ),
+          );
+        },
+      ),
     );
   }
 }

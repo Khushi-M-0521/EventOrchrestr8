@@ -18,7 +18,7 @@ class UserCredentialModel {
       uid: map['uid'] ?? '',
       createdAt: map['createdAt'] ?? '',
       email: map['email'] ?? '',
-      phoneNumber: map['phoneNmber'] ?? '',
+      phoneNumber: map['phoneNumber'] ?? '',
       password: map['password'] ?? '',
     );
   }

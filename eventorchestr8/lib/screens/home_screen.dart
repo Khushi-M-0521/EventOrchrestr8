@@ -1,6 +1,7 @@
 import 'package:eventorchestr8/screens/my_communities_screen.dart';
 import 'package:eventorchestr8/screens/explore_screen.dart';
 import 'package:eventorchestr8/screens/my_events_screen.dart';
+import 'package:eventorchestr8/screens/profilescreen.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,48 +23,96 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<AppBar> _appBarOptions = <AppBar>[
     //ExploreScreen.appBar(),
     AppBar(
-      
       toolbarHeight: 40,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-               "Hey User,",
+      title: Builder(
+        builder: (BuildContext context) {
+          return ListTile(
+            title: Text(
+              "Hey User,",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
+            subtitle: Text(
               "What are you looking for?",
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
             ),
-          ],
-        ),
+            trailing: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                );
+              },
+              icon: Icon(
+                Icons.account_circle,
+                size: 30,
+              ),
+            ),
+          );
+        },
       ),
+    ),
     AppBar(
-        title: Text(
-               "Communities",
+      toolbarHeight: 30,
+      title: Builder(
+        builder: (BuildContext context) {
+          return ListTile(
+            title: Text(
+              "Communities",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            toolbarHeight: 30,
+            trailing: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                );
+              },
+              icon: Icon(
+                Icons.account_circle,
+                size: 30,
+              ),
+            ),
+          );
+        },
       ),
+    ),
     AppBar(
-         title: Text(
-               "My Events",
+      toolbarHeight: 30,
+      title: Builder(
+        builder: (BuildContext context) {
+          return ListTile(
+            title: Text(
+              "My Events",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            toolbarHeight: 30,
+            trailing: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
+                );
+              },
+              icon: Icon(
+                Icons.account_circle,
+                size: 30,
+              ),
+            ),
+          );
+        },
       ),
+    ),
   ];
 
   void _onItemTapped(int index) {

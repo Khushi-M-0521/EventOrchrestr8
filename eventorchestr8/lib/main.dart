@@ -7,14 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  FirebaseAppCheck firebaseAppCheck=FirebaseAppCheck.instance;
+  FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.instance;
   firebaseAppCheck.activate(
     androidProvider: AndroidProvider.playIntegrity,
   );
-  
+
   runApp(const MyApp());
 }
 
@@ -30,20 +29,19 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData.light().copyWith(
-          colorScheme: lightColorScheme,  
-          scaffoldBackgroundColor: Colors.white,
-          appBarTheme: AppBarTheme.of(context).copyWith(
-            backgroundColor: Colors.white,
-            elevation: 2,
-          )
-        ),
+            colorScheme: lightColorScheme,
+            scaffoldBackgroundColor: Colors.white,
+            appBarTheme: AppBarTheme.of(context).copyWith(
+              backgroundColor: Colors.white,
+              elevation: 2,
+            )),
         darkTheme: ThemeData.dark().copyWith(
-          colorScheme: darkColorScheme,  
+          colorScheme: darkColorScheme,
         ),
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         home: const SplashScreen(),
       ),
     );
   }
 }
-

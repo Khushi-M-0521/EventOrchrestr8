@@ -113,6 +113,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   (route) => false)));
         },
         userDetailModel: userDetailModel,
+        password: '',
       );
     }
   }

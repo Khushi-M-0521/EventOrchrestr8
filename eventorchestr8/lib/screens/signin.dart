@@ -1,7 +1,8 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:eventorchestr8/screens/create_event_form.dart';
 import 'package:eventorchestr8/screens/login_screen.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:eventorchestr8/screens/profilescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -81,8 +82,11 @@ class _SignInScreenState extends State<SignInScreen> {
             password: password,
             onSuccess: () {
               // Navigate to HomeScreen if successful
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()));
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (Route<dynamic> route) =>
+                    false, // This removes all previous routes
+              );
             },
           );
         } catch (error) {
@@ -114,8 +118,11 @@ class _SignInScreenState extends State<SignInScreen> {
             onSuccess: () {
               print(phoneNumber);
               // Navigate to HomeScreen if successful
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()));
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (Route<dynamic> route) =>
+                    false, // This removes all previous routes
+              );
             },
           );
         } catch (error) {
@@ -158,6 +165,7 @@ class _SignInScreenState extends State<SignInScreen> {
     TextField passField = TextField(
       controller: passwordController,
       keyboardType: TextInputType.number,
+      obscureText: true,
       onChanged: (value) {
         setState(() {
           passwordController.text = value;
@@ -328,7 +336,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             print("typed");
                             signIn();
                           },
-                          child: const Text("SIGNIN"),
+                          child: const Text("SIGN IN"),
                         ),
                       ),
                     ],
