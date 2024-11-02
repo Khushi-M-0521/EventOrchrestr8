@@ -99,7 +99,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         },
         profilePicture: image,
         userDetailModel: userDetailModel,
-        password: passwordController.text,
       );
     } else {
       ap.saveUserCredentialDataToFirebase(
@@ -113,7 +112,6 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   (route) => false)));
         },
         userDetailModel: userDetailModel,
-        password: '',
       );
     }
   }
