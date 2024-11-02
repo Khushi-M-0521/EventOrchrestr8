@@ -1,9 +1,15 @@
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDescriptionScreen extends StatefulWidget {
+  const EventDescriptionScreen({required this.event,super.key});
+
+  final Map<String,dynamic> event;
+
   @override
   State<EventDescriptionScreen> createState() => _EventDescriptionScreenState();
 }
@@ -11,14 +17,17 @@ class EventDescriptionScreen extends StatefulWidget {
 class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
   void _launchURL(String location) async {
     final Uri url =
-        Uri.parse('https://www.google.com/maps/search/?api=1&query=Bangalore, Institute of Technology, Bangalore, India');
-    print(url.toString());
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=Bangalore, $location');
     try {
         await launchUrl(url);
     } catch (e) {
       showSnackBar(context, 'Could not launch $url');
-      throw e.toString();
     }
+  }
+
+  void _shareEventDetails() {
+    print("here");
+    Share.share('Join us at ${widget.event["title"]} on ${formattedDate(widget.event['dateTime'])}, ${formattedTime(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
   }
 
   @override
@@ -32,8 +41,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
             child: FadeInImage(
               placeholder: AssetImage(
                   'assets/images/transparent.png'), // Placeholder image
-              image: NetworkImage(
-                  "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=400"), // Replace with your image asset
+              image: NetworkImage(widget.event['imageUrl']), // Replace with your image asset
               fit: BoxFit.fill,
             ),
           ),
@@ -70,14 +78,14 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Summer Fiesta 2023',
+                                  widget.event['title'],
                                   style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    _launchURL("Bangalore, India");
+                                    _launchURL(widget.event['location']);
                                   },
                                   child: Row(
                                     children: [
@@ -89,7 +97,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         size: 15,
                                       ),
                                       Text(
-                                        'Bangalore, India',
+                                        widget.event['location'],
                                         style: TextStyle(
                                             fontSize: 12,
                                             color: Theme.of(context)
@@ -114,14 +122,16 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               label: Column(
                                 children: [
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.calendar_today,
                                           size: 10,
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
+                                      const SizedBox(width: 5,),
                                       Text(
-                                        '10th June, 2023',
+                                        formattedDate(widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     ],
@@ -132,7 +142,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text('10:00 AM'),
+                                      Text(formattedTime(widget.event['dateTime'])),
                                     ],
                                   ),
                                 ],
@@ -148,7 +158,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               size: 20,
                             ),
                             SizedBox(width: 8),
-                            Text('Outdoor Music & Arts Festival'),
+                            Text(widget.event['theme']),
                           ],
                         ),
                         SizedBox(height: 8),
@@ -159,7 +169,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               size: 20,
                             ),
                             SizedBox(width: 8),
-                            Text('150 People Registered'),
+                            Text('${widget.event['peopleRegistered']} People Registered'),
                           ],
                         ),
                         SizedBox(height: 16),
@@ -171,7 +181,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                           ),
                         ),
                         Text(
-                          'Join us for a day of fun, music, and art! Enjoy live performances, art exhibitions, and food stalls. Bring your friends and family for an unforgettable experience!',
+                          widget.event['description'],
                         ),
                         SizedBox(height: 16),
                         Text(
@@ -188,7 +198,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Organizer: John Doe\njohn.doe@example.com\n +1234567890',
+                                  '${widget.event['contacts']['name']}\n${widget.event['contacts']['email']}\n${widget.event['contacts']['phone']}',
                                   style: TextStyle(fontSize: 14),
                                 ),
                               ],
@@ -196,9 +206,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                             TextButton.icon(
                               icon: Icon(Icons.share),
                               label: Text('Share '),
-                              onPressed: () {
-                                // Social media sharing logic
-                              },
+                              onPressed: _shareEventDetails,
                             )
                           ],
                         ),
@@ -217,7 +225,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                   TextSpan(
                                     children: [
                                       TextSpan(
-                                          text: "₹200",
+                                          text: "₹${widget.event["price"]}",
                                           style: TextStyle(
                                               fontSize: 24,
                                               color: Colors.green)),
@@ -236,9 +244,19 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                   },
                                   child: Text('Book Tickets'),
                                 ),
-                                Text(
-                                  'Time Left: 5 days 15:14',
-                                  style: TextStyle(fontSize: 12),
+                                CountdownTimer(
+                                endTime:DateTime.fromMicrosecondsSinceEpoch(widget.event["dateTime"] as int).millisecondsSinceEpoch ,
+                                widgetBuilder: (_, time) {
+                                  print(DateTime(2024,12,6,12,10).microsecondsSinceEpoch);
+                                  print(DateTime(widget.event["dateTime"] as int) );
+                                  if (time == null) {
+                                    return Text('Registration closed');
+                                  }
+                                  return Text(
+                                    'Time left: ${time.days} days ${time.hours}:${time.min}:${time.sec}',
+                                    style: TextStyle(fontSize: 12),
+                                  );
+                                },
                                 ),
                               ],
                             ),

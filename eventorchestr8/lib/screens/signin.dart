@@ -164,7 +164,7 @@ class _SignInScreenState extends State<SignInScreen> {
     );
     TextField passField = TextField(
       controller: passwordController,
-      keyboardType: TextInputType.number,
+      keyboardType: TextInputType.text,
       obscureText: true,
       onChanged: (value) {
         setState(() {

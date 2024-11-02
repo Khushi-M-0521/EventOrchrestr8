@@ -184,7 +184,6 @@ class AuthProvider extends ChangeNotifier {
     required BuildContext context,
     required UserCredentialModel userCredentialModel,
     required UserDetailModel userDetailModel,
-    required String password, // Add this password field
     required Function onSuccess,
     File? profilePicture,
   }) async {
@@ -202,7 +201,6 @@ class AuthProvider extends ChangeNotifier {
       userCredentialModel.phoneNumber = _firebaseAuth.currentUser!.phoneNumber;
       userCredentialModel.email = _firebaseAuth.currentUser!.email;
       userCredentialModel.uid = _firebaseAuth.currentUser!.uid;
-      userCredentialModel.password = password; // Save the password in Firestore
 
       userDetailModel.uid = _firebaseAuth.currentUser!.uid;
       _userCredentialModel = userCredentialModel;
