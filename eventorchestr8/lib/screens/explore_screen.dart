@@ -21,11 +21,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
   final PageController _pageController = PageController(viewportFraction: 0.8);
   int _currentPage = 0;
   bool isCommunity = true;
+  late Timer timer;
 
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 5), (Timer timer) {
+    timer=Timer.periodic(Duration(seconds: 5), (Timer timer) {
       if (_pageController.hasClients) {
         if (_currentPage < 4) {
           _currentPage++;
@@ -44,6 +45,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    timer.cancel();
     super.dispose();
   }
 

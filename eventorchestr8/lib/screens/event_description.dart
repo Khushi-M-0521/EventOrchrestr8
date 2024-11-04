@@ -1,3 +1,4 @@
+import 'package:eventorchestr8/screens/payment_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,6 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
   }
 
   void _shareEventDetails() {
-    print("here");
     Share.share('Join us at ${widget.event["title"]} on ${formattedDate(widget.event['dateTime'])}, ${formattedTime(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
   }
 
@@ -240,15 +240,13 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               children: [
                                 RoundedButton(
                                   onPressed: () {
-                                    // Booking logic
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=> PaymentScreen(event: widget.event,)));
                                   },
                                   child: Text('Book Tickets'),
                                 ),
                                 CountdownTimer(
                                 endTime:DateTime.fromMicrosecondsSinceEpoch(widget.event["dateTime"] as int).millisecondsSinceEpoch ,
                                 widgetBuilder: (_, time) {
-                                  print(DateTime(2024,12,6,12,10).microsecondsSinceEpoch);
-                                  print(DateTime(widget.event["dateTime"] as int) );
                                   if (time == null) {
                                     return Text('Registration closed');
                                   }

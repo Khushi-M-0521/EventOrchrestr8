@@ -1,8 +1,6 @@
 import 'package:country_picker/country_picker.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:eventorchestr8/screens/create_event_form.dart';
 import 'package:eventorchestr8/screens/login_screen.dart';
-import 'package:eventorchestr8/screens/profilescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
