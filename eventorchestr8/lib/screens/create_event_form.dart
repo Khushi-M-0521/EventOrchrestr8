@@ -8,7 +8,7 @@ import 'dart:io';
 import '../utils/utils.dart';
 
 class CreateEventPage extends StatefulWidget {
-  const CreateEventPage({Key? key}) : super(key: key);
+  const CreateEventPage({super.key});
 
   @override
   _CreateEventPageState createState() => _CreateEventPageState();

@@ -6,7 +6,7 @@ class CommunityListTile extends StatelessWidget {
   final String tagline;
   final int membersCount;
 
-  CommunityListTile({
+  const CommunityListTile({super.key, 
     required this.imageUrl,
     required this.name,
     required this.tagline,

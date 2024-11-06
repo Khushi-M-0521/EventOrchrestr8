@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/dashed_divider.dart';
 import 'package:eventorchestr8/widgets/label_style.dart';
+import 'package:eventorchestr8/widgets/secure_screen.dart';
 import 'package:eventorchestr8/widgets/title_text.dart';
 import 'package:eventorchestr8/widgets/value_style.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,12 @@ class _TicketScreenState extends State<TicketScreen> {
   int secondsLeft = 5;
   Timer? timer;
 
+  @override
+  void initState() {
+    super.initState();
+    SecureScreen.enableSecureScreen();
+  }
+
   void _showQrCode() {
     setState(() {
       showQr = true;
@@ -51,271 +58,286 @@ class _TicketScreenState extends State<TicketScreen> {
   @override
   void dispose() {
     timer?.cancel();
+    SecureScreen.disableSecureScreen();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    SecureScreen.enableSecureScreen();
     return Scaffold(
       appBar: AppBar(
         leading: widget.leadingWidgetToPreviousScreen,
         title: TitleText(text: 'Ticket'),
       ),
-      body: Stack(children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Card(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 25.0, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            widget.event["title"],
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
+      body: SingleChildScrollView(
+        child: Stack(children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Card(
+              elevation: 30,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                widget.event["title"],
+                                overflow: TextOverflow.visible,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                              Text(
+                                widget.event["theme"],
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimary
+                                      .withOpacity(0.8),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            widget.event["theme"],
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimary
-                                  .withOpacity(0.8),
-                            ),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.qr_code,
-                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
-                        iconSize: 60, // Adjust as needed
-                        onPressed: _showQrCode,
-                      ),
-                    ],
+                        IconButton(
+                          icon: Icon(
+                            Icons.qr_code,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                          iconSize: 60, // Adjust as needed
+                          onPressed: _showQrCode,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                DashedTicketDivider(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                SizedBox(height: 10),
-                // Section 2
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 25.0,
+                  QrImageView(
+                    data: widget.qr,
+                    version: QrVersions.auto,
+                    size: 300.0,
+                    backgroundColor: Colors.white,
                   ),
-                  child: Table(
-                    children: [
-                      TableRow(
-                        children: [
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Venue',
-                                    style: LabelStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                  SizedBox(height: 10,),
+                  DashedTicketDivider(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  SizedBox(height: 10),
+                  // Section 2
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 25.0,
+                    ),
+                    child: Table(
+                      children: [
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Venue',
+                                      style: LabelStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    widget.event["location"],
-                                    style: ValueStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                                    Text(
+                                      widget.event["location"],
+                                      style: ValueStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Date',
-                                    style: LabelStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Date',
+                                      style: LabelStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    formattedDate(widget.event["dateTime"]),
-                                    style: ValueStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                                    Text(
+                                      formattedDate(widget.event["dateTime"]),
+                                      style: ValueStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Status',
-                                    style: LabelStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Status',
+                                      style: LabelStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    'Confirmed',
-                                    style: ValueStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                                    Text(
+                                      'Confirmed',
+                                      style: ValueStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Time',
-                                    style: LabelStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                            TableCell(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Time',
+                                      style: LabelStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    formattedTime(widget.event["dateTime"]),
-                                    style: ValueStyle().copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
+                                    Text(
+                                      formattedTime(widget.event["dateTime"]),
+                                      style: ValueStyle().copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                DashedTicketDivider(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-                // Section 3
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 25.0, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Name',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            'John Doe',
-                            style: LabelStyle().copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: <Widget>[
-                          Text(
-                            'Amount',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            '\₹${widget.amount}',
-                            style: LabelStyle().copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  DashedTicketDivider(
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
-                ),
-              ],
+                  // Section 3
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Name',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                            Text(
+                              'John Doe',
+                              style: LabelStyle().copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(
+                              'Amount',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                            Text(
+                              '₹${widget.amount}',
+                              style: LabelStyle().copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        // QR code overlay
-        if (showQr)
-          Container(
-            color: Colors.black54,
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                QrImageView(
-                  data:widget.qr,
-                  version: QrVersions.auto,
-                  size: 300.0,
-                  backgroundColor: Colors.white,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  '${secondsLeft}s left',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ]),
+          // QR code overlay
+          // if (showQr)
+          //   Container(
+          //     color: Colors.black54,
+          //     alignment: Alignment.center,
+          //     child: Column(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: [
+          //         QrImageView(
+          //           data: widget.qr,
+          //           version: QrVersions.auto,
+          //           size: 300.0,
+          //           backgroundColor: Colors.white,
+          //         ),
+          //         SizedBox(height: 20),
+          //         Text(
+          //           '${secondsLeft}s left',
+          //           style: TextStyle(
+          //             fontSize: 24,
+          //             color: Colors.white,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+        ]),
+      ),
     );
   }
 }
