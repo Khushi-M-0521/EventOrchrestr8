@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eventorchestr8/constants/config.dart';
 import 'package:eventorchestr8/models/user_credential.dart';
 import 'package:eventorchestr8/models/user_details.dart';
 import 'package:eventorchestr8/screens/otp_screen.dart';
@@ -8,6 +10,8 @@ import 'package:eventorchestr8/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -50,7 +54,6 @@ class AuthProvider extends ChangeNotifier {
 
   void sigInWithPhone(BuildContext context, String phoneNumber) async {
     try {
-      print("here");
       await _firebaseAuth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential phoneAuthCredential) async {
@@ -77,24 +80,64 @@ class AuthProvider extends ChangeNotifier {
     print("done");
   }
 
+  String generateEmailOtp() {
+    final random = Random();
+    return (random.nextInt(900000) + 100000).toString(); // 6-digit OTP
+  }
+
+  void signInWithEmail(BuildContext context, String email) async {
+    final smtpServer = gmail(smtpServerUsername, smtpServerPassword);
+    final otp = generateEmailOtp();
+    final message = Message()
+      ..from = Address(smtpServerUsername, 'EventOrchestr8')
+      ..recipients.add(email)
+      ..subject = 'Verification Code'
+      ..text = 'Your OTP code is $otp';
+    try {
+      _firebaseAuth.createUserWithEmailAndPassword(email: email, password: otp);
+      await send(message, smtpServer);
+      print("OTP sent to $email");
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => OTPScreen(
+                verificationId: otp,
+                email: email,
+              )));
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+
   void verifyOtp({
     required BuildContext context,
     required String verficationId,
     required String userOtp,
     required Function onSuccess,
+    required String? email,
   }) async {
     _isLoading = true;
     notifyListeners();
-
+    User? user;
     try {
-      PhoneAuthCredential creds = PhoneAuthProvider.credential(
-          verificationId: verficationId, smsCode: userOtp);
-      User? user = (await _firebaseAuth.signInWithCredential(creds)).user;
+      if (email==null) {
+        PhoneAuthCredential creds = PhoneAuthProvider.credential(
+            verificationId: verficationId, smsCode: userOtp);
+        user = (await _firebaseAuth.signInWithCredential(creds)).user;
 
-      if (user != null) {
-        _uid = user.uid;
-        onSuccess();
+        
+      } else {
+        if (verficationId == userOtp) {
+          AuthCredential creds= EmailAuthProvider.credential(email: email, password: userOtp);
+          user = (await _firebaseAuth.signInWithCredential(creds)).user;
+          onSuccess();
+        } else {
+          showSnackBar(context, "Incorrect verification code.");
+        }
       }
+      if (user != null) {
+          _uid = user.uid;
+          onSuccess();
+        }
+
       _isLoading = false;
       notifyListeners();
     } on FirebaseAuthException catch (e) {
@@ -116,6 +159,69 @@ class AuthProvider extends ChangeNotifier {
       print("New User");
       return false;
     }
+  }
+
+  void saveUserCredentialDataToFirebase({
+    required BuildContext context,
+    required UserCredentialModel userCredentialModel,
+    required UserDetailModel userDetailModel,
+    required Function onSuccess,
+    File? profilePicture,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      if (profilePicture != null) {
+        await storeFileToStorage("profilePicture/$_uid", profilePicture)
+            .then((value) {
+          userDetailModel.profilePicture = value;
+        });
+      }
+      userCredentialModel.createdAt =
+          DateTime.now().microsecondsSinceEpoch.toString();
+      userCredentialModel.uid = _firebaseAuth.currentUser!.uid;
+      userDetailModel.uid = _firebaseAuth.currentUser!.uid;
+
+      _userCredentialModel = userCredentialModel;
+      _userDetailModel = userDetailModel;
+
+      //
+
+      // Uploading to Firestore
+      await _firebaseFirestore
+          .collection("users")
+          .doc(_uid)
+          .set(userCredentialModel.toMap());
+      await _firebaseFirestore
+          .collection("user_details")
+          .doc(_uid)
+          .set(userDetailModel.toMap())
+          .then((value) {
+        onSuccess();
+        _isLoading = false;
+        notifyListeners();
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, e.message.toString());
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String> storeFileToStorage(String ref, File file) async {
+    UploadTask uploadTask = _firebaseStorage.ref().child(ref).putFile(file);
+    TaskSnapshot snapshot = await uploadTask;
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
+
+  //storing data locally
+  Future saveUserDataToSP() async {
+    SharedPreferences s = await SharedPreferences.getInstance();
+    await s.setString(
+        "user_credential_model", jsonEncode(userCredentialModel.toMap()));
+    await s.setString("user_detail_model", jsonEncode(userDetailModel.toMap()));
   }
 
   Future<void> signInWithPhoneAndPassword({
@@ -162,6 +268,7 @@ class AuthProvider extends ChangeNotifier {
 
         // Save user data locally
         await saveUserDataToSP();
+        setSignIn();
 
         // Call onSuccess callback
         onSuccess();
@@ -180,68 +287,6 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  void saveUserCredentialDataToFirebase({
-    required BuildContext context,
-    required UserCredentialModel userCredentialModel,
-    required UserDetailModel userDetailModel,
-    required Function onSuccess,
-    File? profilePicture,
-  }) async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      if (profilePicture != null) {
-        await storeFileToStorage("profilePicture/$_uid", profilePicture)
-            .then((value) {
-          userDetailModel.profilePicture = value;
-        });
-      }
-      userCredentialModel.createdAt =
-          DateTime.now().microsecondsSinceEpoch.toString();
-      userCredentialModel.phoneNumber = _firebaseAuth.currentUser!.phoneNumber;
-      userCredentialModel.email = _firebaseAuth.currentUser!.email;
-      userCredentialModel.uid = _firebaseAuth.currentUser!.uid;
-
-      userDetailModel.uid = _firebaseAuth.currentUser!.uid;
-      _userCredentialModel = userCredentialModel;
-      _userDetailModel = userDetailModel;
-
-      // Uploading to Firestore
-      await _firebaseFirestore
-          .collection("users")
-          .doc(_uid)
-          .set(userCredentialModel.toMap());
-      await _firebaseFirestore
-          .collection("user_details")
-          .doc(_uid)
-          .set(userDetailModel.toMap())
-          .then((value) {
-        onSuccess();
-        _isLoading = false;
-        notifyListeners();
-      });
-    } on FirebaseAuthException catch (e) {
-      showSnackBar(context, e.message.toString());
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<String> storeFileToStorage(String ref, File file) async {
-    UploadTask uploadTask = _firebaseStorage.ref().child(ref).putFile(file);
-    TaskSnapshot snapshot = await uploadTask;
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    return downloadUrl;
-  }
-
-  //storing data locally
-  Future saveUserDataToSP() async {
-    SharedPreferences s = await SharedPreferences.getInstance();
-    await s.setString(
-        "user_credential_model", jsonEncode(userCredentialModel.toMap()));
-    await s.setString("user_detail_model", jsonEncode(userDetailModel.toMap()));
-  }
-
   Future<void> signInWithEmailAndPassword({
     required BuildContext context,
     required String email,
@@ -252,16 +297,46 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      UserCredential userCredential =
-          await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      QuerySnapshot querySnapshot = await _firebaseFirestore
+          .collection("users")
+          .where("email", isEqualTo: email)
+          .get();
 
-      if (userCredential.user != null) {
-        _uid = userCredential.user!.uid;
-        await setSignIn(); // Make sure to set sign-in state
-        onSuccess(); // Call the success callback
+      if (querySnapshot.docs.isEmpty) {
+        _isLoading = false;
+        notifyListeners();
+        showSnackBar(context, "Email Address not found");
+        return;
+      }
+
+      DocumentSnapshot userDoc = querySnapshot.docs.first;
+      print(userDoc.data());
+      Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
+      // Verify the password stored in Firestore
+      print(data);
+      String? storedPassword = data?['password'];
+      print(storedPassword);
+
+      if (storedPassword == password) {
+        // Successful login
+        _uid = userDoc['uid'];
+        _userCredentialModel =
+            UserCredentialModel.fromMap(userDoc.data() as Map<String, dynamic>);
+        _userDetailModel = UserDetailModel.fromMap(
+          (await _firebaseFirestore.collection("user_details").doc(_uid).get())
+              .data()!,
+        );
+
+        // Save user data locally
+        await saveUserDataToSP();
+        setSignIn();
+
+        // Call onSuccess callback
+        onSuccess();
+      } else {
+        _isLoading = false;
+        notifyListeners();
+        showSnackBar(context, "Incorrect password");
       }
 
       _isLoading = false;

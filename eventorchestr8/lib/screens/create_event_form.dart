@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/home_screen.dart';
-import 'package:eventorchestr8/screens/my_events_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
-import '../utils/utils.dart';
 
 class CreateEventPage extends StatefulWidget {
   const CreateEventPage({super.key});

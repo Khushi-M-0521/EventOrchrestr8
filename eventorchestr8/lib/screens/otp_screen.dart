@@ -11,9 +11,11 @@ import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 
 class OTPScreen extends StatefulWidget {
-  const OTPScreen({super.key, required this.verificationId, this.phoneNumber});
+  const OTPScreen(
+      {super.key, required this.verificationId, this.phoneNumber, this.email});
   final String verificationId;
   final String? phoneNumber;
+  final String? email;
   @override
   State<OTPScreen> createState() => _OTPScreenState();
 }
@@ -39,29 +41,45 @@ class _OTPScreenState extends State<OTPScreen> {
 
   void verifyOtp(BuildContext context, String userOtp) {
     final ap = Provider.of<AuthProvider>(context, listen: false);
-    ap.verifyOtp(
-      context: context,
-      verficationId: widget.verificationId,
-      userOtp: userOtp,
-      onSuccess: () {
-        ap.checkExixtingUser().then((value) async {
-          if (value) {
-            //user exits in our app
-            print("existing prend");
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("User Already exists")),
-            );
-            Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const SignInScreen()),
-                (route) => false);
-          } else {
-            Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const UserInfoScreen()),
-                (route) => false);
-          }
-        });
-      },
-    );
+
+    void onSuccess() {
+      ap.checkExixtingUser().then((value) async {
+        if (value) {
+          //user exits in our app
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("User Already exists")),
+          );
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const SignInScreen()),
+              (route) => false);
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                  builder: (context) => widget.phoneNumber != null
+                      ? UserInfoScreen(phoneNumber: widget.phoneNumber)
+                      : UserInfoScreen(email: widget.email)),
+              (route) => false);
+        }
+      });
+    }
+
+    widget.phoneNumber != null
+        ? ap.verifyOtp(
+            context: context,
+            verficationId: widget.verificationId,
+            userOtp: userOtp,
+            onSuccess: onSuccess,
+            email: null,
+          )
+        : ap.verifyOtp(
+            context: context,
+            verficationId: widget.verificationId,
+            userOtp: userOtp,
+            onSuccess: onSuccess,
+            email: widget.email,
+          );
+    // print(widget.verificationId!=userOtp);
+    // widget.email!=null? ( onSuccess() :null) :null;
   }
 
   @override
@@ -86,11 +104,12 @@ class _OTPScreenState extends State<OTPScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const FadeInImage(
+                    FadeInImage(
                       placeholder:
-                          AssetImage('./assets/images/phone_verification.png'),
-                      image:
-                          AssetImage('./assets/images/phone_verification.png'),
+                          AssetImage('./assets/images/transparent_image.png'),
+                      image: AssetImage(widget.phoneNumber != null
+                          ? './assets/images/phone_verification.png'
+                          : './assets/images/email_verification.png'),
                       fit: BoxFit.cover,
                       height: 200,
                       width: 200,
@@ -98,10 +117,14 @@ class _OTPScreenState extends State<OTPScreen> {
                     const SizedBox(
                       height: 50,
                     ),
-                    const TitleText(text: "Verify Your Mobile Number"),
+                    TitleText(
+                        text: widget.phoneNumber != null
+                            ? "Verify Your Mobile Number"
+                            : "Verify Your Email Address"),
                     SubtitleText(
-                      text:
-                          'We have sent a Verification Code to (${widget.phoneNumber!.substring(0, 3)})${widget.phoneNumber!.substring(3)}',
+                      text: widget.phoneNumber != null
+                          ? 'We have sent a Verification Code to (${widget.phoneNumber!.substring(0, 3)})${widget.phoneNumber!.substring(3)}'
+                          : "We have sent a Verification Code to ${widget.email!}",
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(

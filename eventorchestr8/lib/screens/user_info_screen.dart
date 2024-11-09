@@ -10,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoScreen extends StatefulWidget {
-  const UserInfoScreen({super.key});
+  const UserInfoScreen({super.key,this.phoneNumber,this.email});
+  final String? phoneNumber;
+  final String? email;
 
   @override
   State<UserInfoScreen> createState() => _UserInfoScreenState();
@@ -76,8 +78,8 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     UserCredentialModel userCredentialModel = UserCredentialModel(
       uid: "",
       createdAt: "",
-      email: "",
-      phoneNumber: "",
+      email: widget.email,
+      phoneNumber: widget.phoneNumber,
       password: passwordController.text,
     );
     UserDetailModel userDetailModel = UserDetailModel(

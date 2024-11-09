@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool switched = false;
+  bool correctInput =false;
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   Country selectedCountry = Country(
@@ -31,6 +32,13 @@ class _LoginScreenState extends State<LoginScreen> {
     displayNameNoCountryCode: "IN",
     e164Key: "",
   );
+
+  @override
+  void dispose(){
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
 
   void swap() {
     setState(() {
@@ -59,6 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
         context, "+${selectedCountry.phoneCode}$phoneNumber");
   }
 
+  void sendEmail(){
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String email = emailController.text.trim();
+    authProvider.signInWithEmail(context, email);
+  }
+
   @override
   Widget build(BuildContext context) {
     phoneController.selection = TextSelection.fromPosition(
@@ -84,6 +98,11 @@ class _LoginScreenState extends State<LoginScreen> {
     TextField emailField = TextField(
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
+      onEditingComplete: () {
+        setState(() {
+          correctInput=EmailValidator.validate(emailController.text);
+        });
+      },
       onChanged: (value) {
         setState(() {
           emailController.text = value;
@@ -117,6 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
       onChanged: (value) {
         setState(() {
           phoneController.text = value;
+        });
+      },
+      onEditingComplete: (){
+        setState(() {
+          correctInput=phoneController.text.trim().length == selectedCountry.example.length;
         });
       },
       style: const TextStyle(
@@ -159,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         suffixIcon:
-            phoneController.text.length == selectedCountry.example.length
+            phoneController.text.trim().length == selectedCountry.example.length
                 ? correctIcon
                 : null,
       ),
@@ -214,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: RoundedButton(
                       onPressed: () {
                         print("typing");
-                        sendPhoneNumber();
+                        switched?sendPhoneNumber():sendEmail();
                       },
                       child: const Text("VERIFY"),
                     ),
