@@ -227,7 +227,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signInWithPhoneAndPassword({
     required BuildContext context,
     required String phoneNumber,
-    required String password,
+    required int password,
     required Function onSuccess,
   }) async {
     _isLoading = true;
@@ -290,7 +290,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signInWithEmailAndPassword({
     required BuildContext context,
     required String email,
-    required String password,
+    required int password,
     required Function onSuccess,
   }) async {
     _isLoading = true;

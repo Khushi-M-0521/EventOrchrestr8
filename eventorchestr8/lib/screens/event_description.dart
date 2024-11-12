@@ -1,4 +1,5 @@
 import 'package:eventorchestr8/screens/payment_screen.dart';
+import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +8,11 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EventDescriptionScreen extends StatefulWidget {
-  const EventDescriptionScreen({required this.event,super.key});
+  const EventDescriptionScreen(
+      {required this.event, required this.isRegistered, super.key});
 
-  final Map<String,dynamic> event;
+  final Map<String, dynamic> event;
+  final bool isRegistered;
 
   @override
   State<EventDescriptionScreen> createState() => _EventDescriptionScreenState();
@@ -17,17 +20,18 @@ class EventDescriptionScreen extends StatefulWidget {
 
 class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
   void _launchURL(String location) async {
-    final Uri url =
-        Uri.parse('https://www.google.com/maps/search/?api=1&query=Bangalore, $location');
+    final Uri url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=Bangalore, $location');
     try {
-        await launchUrl(url);
+      await launchUrl(url);
     } catch (e) {
       showSnackBar(context, 'Could not launch $url');
     }
   }
 
   void _shareEventDetails() {
-    Share.share('Join us at ${widget.event["title"]} on ${formattedDate(widget.event['dateTime'])}, ${formattedTime(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
+    Share.share(
+        'Join us at ${widget.event["title"]} on ${formattedDate(widget.event['dateTime'])}, ${formattedTime(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
   }
 
   @override
@@ -41,7 +45,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
             child: FadeInImage(
               placeholder: AssetImage(
                   'assets/images/transparent.png'), // Placeholder image
-              image: NetworkImage(widget.event['imageUrl']), // Replace with your image asset
+              image: NetworkImage(
+                  widget.event['imageUrl']), // Replace with your image asset
               fit: BoxFit.fill,
             ),
           ),
@@ -129,7 +134,9 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      const SizedBox(width: 5,),
+                                      const SizedBox(
+                                        width: 5,
+                                      ),
                                       Text(
                                         formattedDate(widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
@@ -142,7 +149,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text(formattedTime(widget.event['dateTime'])),
+                                      Text(formattedTime(
+                                          widget.event['dateTime'])),
                                     ],
                                   ),
                                 ],
@@ -169,7 +177,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               size: 20,
                             ),
                             SizedBox(width: 8),
-                            Text('${widget.event['peopleRegistered']} People Registered'),
+                            Text(
+                                '${widget.event['peopleRegistered']} People Registered'),
                           ],
                         ),
                         SizedBox(height: 16),
@@ -240,22 +249,34 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               children: [
                                 RoundedButton(
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=> PaymentScreen(event: widget.event,)));
+                                     Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) => !widget.isRegistered?PaymentScreen(
+                                                  event: widget.event,
+                                                ):TicketScreen(leadingWidgetToPreviousScreen: IconButton(onPressed: (){
+                                                  Navigator.of(context).pop();
+                                                }, icon: Icon(Icons.arrow_back)), amount: widget.event["price"]*1.1, event: widget.event, qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',)));
                                   },
-                                  child: Text('Book Tickets'),
+                                  child: !widget.isRegistered
+                                      ? Text('Book Tickets')
+                                      : Text("Veiw Ticket"),
                                 ),
-                                CountdownTimer(
-                                endTime:DateTime.fromMicrosecondsSinceEpoch(widget.event["dateTime"] as int).millisecondsSinceEpoch ,
-                                widgetBuilder: (_, time) {
-                                  if (time == null) {
-                                    return Text('Registration closed');
-                                  }
-                                  return Text(
-                                    'Time left: ${time.days} days ${time.hours}:${time.min}:${time.sec}',
-                                    style: TextStyle(fontSize: 12),
-                                  );
-                                },
-                                ),
+                                if (!widget.isRegistered)
+                                  CountdownTimer(
+                                    endTime:
+                                        DateTime.fromMicrosecondsSinceEpoch(
+                                                widget.event["dateTime"] as int)
+                                            .millisecondsSinceEpoch,
+                                    widgetBuilder: (_, time) {
+                                      if (time == null) {
+                                        return Text('Registration closed');
+                                      }
+                                      return Text(
+                                        'Time left: ${time.days} days ${time.hours}:${time.min}:${time.sec}',
+                                        style: TextStyle(fontSize: 12),
+                                      );
+                                    },
+                                  ),
                               ],
                             ),
                           ],

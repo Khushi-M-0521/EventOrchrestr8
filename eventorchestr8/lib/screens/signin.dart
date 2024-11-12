@@ -69,9 +69,9 @@ class _SignInScreenState extends State<SignInScreen> {
     if (!switched) {
       // Email mode
       String email = emailController.text.trim();
-      String password = passwordController.text.trim();
+      int password = passwordController.text.trim().hashCode;
 
-      if (EmailValidator.validate(email) && password.isNotEmpty) {
+      if (EmailValidator.validate(email) && passwordController.text.isNotEmpty) {
         try {
           // Await email sign-in method from AuthProvider
           await authProvider.signInWithEmailAndPassword(
@@ -103,10 +103,10 @@ class _SignInScreenState extends State<SignInScreen> {
     } else {
       // Phone mode
       String phoneNumber = phoneController.text.trim();
-      String password = passwordController.text.trim();
+      int password = passwordController.text.trim().hashCode;
       print(password);
 
-      if (phoneNumber.isNotEmpty && password.isNotEmpty) {
+      if (phoneNumber.isNotEmpty && passwordController.text.isNotEmpty) {
         try {
           // Await phone sign-in method from AuthProvider
           await authProvider.signInWithPhoneAndPassword(
