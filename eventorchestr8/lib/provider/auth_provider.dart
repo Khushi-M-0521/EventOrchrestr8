@@ -118,15 +118,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
     User? user;
     try {
-      if (email==null) {
+      if (email == null) {
         PhoneAuthCredential creds = PhoneAuthProvider.credential(
             verificationId: verficationId, smsCode: userOtp);
         user = (await _firebaseAuth.signInWithCredential(creds)).user;
-
-        
       } else {
         if (verficationId == userOtp) {
-          AuthCredential creds= EmailAuthProvider.credential(email: email, password: userOtp);
+          AuthCredential creds =
+              EmailAuthProvider.credential(email: email, password: userOtp);
           user = (await _firebaseAuth.signInWithCredential(creds)).user;
           onSuccess();
         } else {
@@ -134,9 +133,9 @@ class AuthProvider extends ChangeNotifier {
         }
       }
       if (user != null) {
-          _uid = user.uid;
-          onSuccess();
-        }
+        _uid = user.uid;
+        onSuccess();
+      }
 
       _isLoading = false;
       notifyListeners();
@@ -227,7 +226,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signInWithPhoneAndPassword({
     required BuildContext context,
     required String phoneNumber,
-    required String password,
+    required int password,
     required Function onSuccess,
   }) async {
     _isLoading = true;
@@ -290,7 +289,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signInWithEmailAndPassword({
     required BuildContext context,
     required String email,
-    required String password,
+    required int password,
     required Function onSuccess,
   }) async {
     _isLoading = true;

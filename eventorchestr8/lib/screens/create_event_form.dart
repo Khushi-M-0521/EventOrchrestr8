@@ -77,9 +77,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
           'description': _descController.text,
           'location': _locationController.text,
           'date_time': _dateTimeController.text,
-          'in_person_event': _isInPersonEvent,
-          'guests': _guestController.text,
-          'sponsors': _sponsorsController.text,
           'created_at': FieldValue.serverTimestamp(),
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,9 +93,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                "Event Name, Description, Location, Date & Time are required")),
+        const SnackBar(content: Text("All details are required")),
       );
     }
   }
@@ -123,7 +118,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 width: double.infinity,
                 height: MediaQuery.of(context).size.height * .3,
                 decoration: BoxDecoration(
-                  color: Colors.green[100],
+                  // color: Colors.green[100],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: _filePickerResult != null
@@ -178,41 +173,11 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 readOnly: true,
                 onTap: () => _selectDateTime(context)),
             const SizedBox(height: 8),
-            _buildTextField(
-                controller: _guestController,
-                icon: Icons.people_outlined,
-                label: "Guests",
-                hint: "Enter list of guests"),
-            const SizedBox(height: 8),
-            _buildTextField(
-                controller: _sponsorsController,
-                icon: Icons.attach_money_outlined,
-                label: "Sponsors",
-                hint: "Enter Sponsors"),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text(
-                  "In Person Event",
-                  style: TextStyle(fontSize: 20, color: Colors.green),
-                ),
-                const Spacer(),
-                Switch(
-                    activeColor: Colors.green,
-                    value: _isInPersonEvent,
-                    onChanged: (value) {
-                      setState(() {
-                        _isInPersonEvent = value;
-                      });
-                    }),
-              ],
-            ),
-            const SizedBox(height: 8),
             SizedBox(
               height: 50,
               width: double.infinity,
               child: MaterialButton(
-                color: Colors.green,
+                // color: Colors.green,
                 onPressed: _createEvent,
                 child: const Text(
                   "Create New Event",
