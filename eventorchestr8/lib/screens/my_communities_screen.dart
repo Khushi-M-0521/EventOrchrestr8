@@ -1,5 +1,6 @@
 import 'package:eventorchestr8/constants/example_communites.dart';
 import 'package:eventorchestr8/screens/create_event_form.dart';
+import 'package:eventorchestr8/screens/specific_community_screen.dart';
 import 'package:eventorchestr8/widgets/community_list_card.dart';
 import 'package:flutter/material.dart';
 
@@ -78,7 +79,9 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
             .length, // Replace with the actual number of communities or events
         itemBuilder: (context, index) {
           return InkWell(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context)=> const CommunityScreen()));
+            },
             child: CommunityListTile(
               imageUrl: list[index]["imageUrl"] as String,
               name: list[index]["name"] as String,

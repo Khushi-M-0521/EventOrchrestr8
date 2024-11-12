@@ -144,7 +144,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
                     child: InkWell(
                       onTap: () {Navigator.of(context).push(MaterialPageRoute(builder: (context)=>
-                    isCommunity?  CommunityDescriptionScreen(community: popular[index],):EventDescriptionScreen(event: popular[index],)));
+                    isCommunity?  CommunityDescriptionScreen(community: popular[index],):EventDescriptionScreen(event: popular[index],isRegistered: false,)));
                       },
                       child: isCommunity
                           ? PopularCommunityCard(
@@ -184,7 +184,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               itemBuilder: (context, index) {
                 return InkWell(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=> isCommunity? CommunityDescriptionScreen(community: list[index],):EventDescriptionScreen(event: list[index],)));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=> isCommunity? CommunityDescriptionScreen(community: list[index],):EventDescriptionScreen(event: list[index],isRegistered: false,)));
                   },
                   child: isCommunity
                       ? CommunityListTile(

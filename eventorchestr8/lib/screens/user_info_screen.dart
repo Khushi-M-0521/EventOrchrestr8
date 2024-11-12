@@ -80,7 +80,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       createdAt: "",
       email: widget.email,
       phoneNumber: widget.phoneNumber,
-      password: passwordController.text,
+      password: passwordController.text.trim().hashCode,
     );
     UserDetailModel userDetailModel = UserDetailModel(
       uid: "",

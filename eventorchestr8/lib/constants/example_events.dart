@@ -12,7 +12,8 @@ final exampleEvents= [
         "email": "john.doe@example.com",
         "phone": "+1234567890"
       },
-      "price": 50
+      "price": 50,
+      "postTime": 1727900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/28976231/pexels-photo-28976231/free-photo-of-elegant-charcuterie-board-for-events-and-catering.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -27,7 +28,8 @@ final exampleEvents= [
         "email": "jane.smith@example.com",
         "phone": "+9876543210"
       },
-      "price": 30
+      "price": 30,
+      "postTime": 1732900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/196652/pexels-photo-196652.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -42,7 +44,8 @@ final exampleEvents= [
         "email": "alice.johnson@example.com",
         "phone": "+1928374650"
       },
-      "price": 75
+      "price": 75,
+      "postTime": 1734900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/1839919/pexels-photo-1839919.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -57,7 +60,8 @@ final exampleEvents= [
         "email": "bob.brown@example.com",
         "phone": "+1029384756"
       },
-      "price": 40
+      "price": 40,
+      "postTime": 1731900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/1002780/pexels-photo-1002780.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -72,7 +76,8 @@ final exampleEvents= [
         "email": "carol.white@example.com",
         "phone": "+9182736450"
       },
-      "price": 20
+      "price": 20,
+      "postTime": 1730900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/2526878/pexels-photo-2526878.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -87,7 +92,8 @@ final exampleEvents= [
         "email": "david.green@example.com",
         "phone": "+1234509876"
       },
-      "price": 25
+      "price": 25,
+      "postTime": 1722900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/2058626/pexels-photo-2058626.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -102,7 +108,8 @@ final exampleEvents= [
         "email": "eve.black@example.com",
         "phone": "+1029384756"
       },
-      "price": 60
+      "price": 60,
+      "postTime": 1726900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -117,7 +124,8 @@ final exampleEvents= [
         "email": "franklin.king@example.com",
         "phone": "+1123456789"
       },
-      "price": 45
+      "price": 45,
+      "postTime": 1729900200000000
     },
     {
       "imageUrl": "https://images.pexels.com/photos/27990776/pexels-photo-27990776/free-photo-of-dubai-bridge.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -132,7 +140,8 @@ final exampleEvents= [
         "email": "george.martin@example.com",
         "phone": "+1987654321"
       },
-      "price": 35
+      "price": 35,
+      "postTime": 1730800200000000
     },
     {
       "imageUrl": "https://media.istockphoto.com/id/1226991771/photo/on-stage-successful-female-speaker-presents-technological-product-uses-remote-control-for.jpg?b=1&s=612x612&w=0&k=20&c=d8_6lRMVlbvC6ELCkkqzQs5M8c9QbzLsDAFW7c0Q8zo=",
@@ -147,6 +156,11 @@ final exampleEvents= [
         "email": "henry.wilson@example.com",
         "phone": "+1239876540"
       },
-      "price": 40
+      "price": 40,
+      "postTime": 1730800200000000
     }
   ];
+
+  //status
+  //last date for registration
+  //duration

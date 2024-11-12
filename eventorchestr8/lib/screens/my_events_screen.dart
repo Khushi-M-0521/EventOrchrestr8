@@ -1,4 +1,5 @@
 import 'package:eventorchestr8/constants/example_events.dart';
+import 'package:eventorchestr8/screens/event_description.dart';
 import 'package:eventorchestr8/widgets/event_list_card.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -116,7 +117,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                     final event = list[index];
                     return InkWell(
                       onTap: (){
-                        
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => EventDescriptionScreen(event: event,isRegistered: true,)));
                       },
                       child: EventListTile(
                         imageUrl: event['imageUrl'],
