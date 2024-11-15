@@ -1,8 +1,11 @@
-import 'package:eventorchestr8/constants/example_communites.dart';
-import 'package:eventorchestr8/screens/create_event_form.dart';
-import 'package:eventorchestr8/screens/specific_community_screen.dart';
-import 'package:eventorchestr8/widgets/community_list_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:eventorchestr8/widgets/community_list_card.dart';
+import 'package:eventorchestr8/screens/create_community.dart';
+import 'package:eventorchestr8/screens/specific_community_screen.dart';
+
+import '../constants/example_communites.dart';
 
 class MyCommunitiesScreen extends StatefulWidget {
   const MyCommunitiesScreen({super.key});
@@ -12,16 +15,44 @@ class MyCommunitiesScreen extends StatefulWidget {
 }
 
 class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
-  bool isJoined = true;
+  List<Map<String, dynamic>> ownedCommunities = [];
+  PageController _pageController = PageController(initialPage: 0);
+  int _selectedPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOwnedCommunities();
+  }
+
+  Future<void> _fetchOwnedCommunities() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String userId = user.uid;
+
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('communities')
+          .where('created_by', isEqualTo: userId)
+          .get();
+
+      setState(() {
+        ownedCommunities = snapshot.docs.map((doc) {
+          return doc.data() as Map<String, dynamic>;
+        }).toList();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, Object>> list = [];
-    if (!isJoined) {
-      list = exampleCommunities.sublist(0, 4);
-    } else {
-      list = exampleCommunities.sublist(4);
-    }
+    List<Map<String, dynamic>> joinedCommunities =
+        exampleCommunities.sublist(4);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,64 +64,81 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
               TextButton(
                 onPressed: () {
                   setState(() {
-                    isJoined = true;
+                    _selectedPage = 0;
                   });
+                  _pageController.jumpToPage(0);
                 },
                 child: Text(
                   "Joined Communities",
                   style: TextStyle(
-                      color: isJoined
-                          ? null
-                          : Theme.of(context).colorScheme.secondaryContainer),
+                    color: _selectedPage == 0
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).colorScheme.secondaryContainer,
+                  ),
                 ),
               ),
               TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isJoined = false;
-                    });
-                  },
-                  child: Text(
-                    "Owned Communities",
-                    style: TextStyle(
-                      color: !isJoined
-                          ? null
-                          : Theme.of(context).colorScheme.secondaryContainer,
-                    ),
-                  )),
+                onPressed: () {
+                  setState(() {
+                    _selectedPage = 1;
+                  });
+                  _pageController.jumpToPage(1);
+                },
+                child: Text(
+                  "Owned Communities",
+                  style: TextStyle(
+                    color: _selectedPage == 1
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         toolbarHeight: 40,
       ),
-      floatingActionButton: isJoined
-          ? null
-          : FloatingActionButton(
+      floatingActionButton: _selectedPage == 1
+          ? FloatingActionButton(
               onPressed: () {
                 Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => CreateEventPage()));
+                    MaterialPageRoute(builder: (context) => CommunityForm()));
               },
               child: Icon(Icons.add),
-            ),
-      floatingActionButtonLocation:
-          isJoined ? null : FloatingActionButtonLocation.endFloat,
-      body: ListView.builder(
-        itemCount: list
-            .length, // Replace with the actual number of communities or events
-        itemBuilder: (context, index) {
-          return InkWell(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context)=> const CommunityScreen()));
-            },
-            child: CommunityListTile(
-              imageUrl: list[index]["imageUrl"] as String,
-              name: list[index]["name"] as String,
-              tagline: list[index]["tagline"] as String,
-              membersCount: list[index]["members"] as int,
-            ),
-          );
+            )
+          : null,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedPage = index;
+          });
         },
+        children: [
+          _buildCommunityList(joinedCommunities),
+          _buildCommunityList(ownedCommunities),
+        ],
       ),
+    );
+  }
+
+  Widget _buildCommunityList(List<Map<String, dynamic>> communities) {
+    return ListView.builder(
+      itemCount: communities.length,
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const CommunityScreen()));
+          },
+          child: CommunityListTile(
+            imageUrl: communities[index]["imageUrl"] ?? '',
+            name: communities[index]["name"] ?? '',
+            tagline: communities[index]["tagline"] ?? '',
+            membersCount: communities[index]["members"] ?? 0,
+          ),
+        );
+      },
     );
   }
 }

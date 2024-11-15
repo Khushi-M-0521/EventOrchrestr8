@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoScreen extends StatefulWidget {
-  const UserInfoScreen({super.key,this.phoneNumber,this.email});
+  const UserInfoScreen({super.key, this.phoneNumber, this.email});
   final String? phoneNumber;
   final String? email;
 
