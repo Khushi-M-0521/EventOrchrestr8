@@ -16,19 +16,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _isSignedIn = false;
-
   bool get isSignedIn => _isSignedIn;
+
   bool _isLoading = false;
-
   bool get isLoading => _isLoading;
+
   String? _uid;
-
   String get uid => _uid!;
+
   UserCredentialModel? _userCredentialModel;
-
   UserCredentialModel get userCredentialModel => _userCredentialModel!;
-  UserDetailModel? _userDetailModel;
 
+  UserDetailModel? _userDetailModel;
   UserDetailModel get userDetailModel => _userDetailModel!;
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -313,7 +312,7 @@ class AuthProvider extends ChangeNotifier {
       Map<String, dynamic>? data = userDoc.data() as Map<String, dynamic>?;
       // Verify the password stored in Firestore
       print(data);
-      String? storedPassword = data?['password'];
+      int storedPassword = data?['password'];
       print(storedPassword);
 
       if (storedPassword == password) {
@@ -345,5 +344,10 @@ class AuthProvider extends ChangeNotifier {
       showSnackBar(context, e.message.toString());
       notifyListeners();
     }
+  }
+
+  void signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }

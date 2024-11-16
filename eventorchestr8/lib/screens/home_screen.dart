@@ -1,7 +1,8 @@
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
 import 'package:eventorchestr8/screens/my_communities_screen.dart';
 import 'package:eventorchestr8/screens/explore_screen.dart';
 import 'package:eventorchestr8/screens/my_events_screen.dart';
-import 'package:eventorchestr8/screens/profilescreen.dart';
+import 'package:eventorchestr8/widgets/profile_icon.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,90 +26,71 @@ class _HomeScreenState extends State<HomeScreen> {
     AppBar(
       toolbarHeight: 40,
       title: Builder(
-        builder: (BuildContext context) {
-          return ListTile(
-            title: Text(
-              "Hey User,",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+        builder: (context) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Hey User,",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "What are you looking for?",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
-            ),
-            subtitle: Text(
-              "What are you looking for?",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            trailing: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
-                );
-              },
-              icon: Icon(
-                Icons.account_circle,
-                size: 30,
-              ),
-            ),
+              ProfileIcon(),
+            ],
           );
         },
       ),
     ),
     AppBar(
-      toolbarHeight: 30,
+      toolbarHeight: 40,
       title: Builder(
         builder: (BuildContext context) {
-          return ListTile(
-            title: Text(
-              "Communities",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Communities",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            trailing: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
-                );
-              },
-              icon: Icon(
-                Icons.account_circle,
-                size: 30,
-              ),
-            ),
+              ProfileIcon(),
+            ],
           );
         },
       ),
     ),
     AppBar(
-      toolbarHeight: 30,
+      //toolbarHeight: 40,
       title: Builder(
         builder: (BuildContext context) {
-          return ListTile(
-            title: Text(
-              "My Events",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "My Events",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            trailing: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
-                );
-              },
-              icon: Icon(
-                Icons.account_circle,
-                size: 30,
-              ),
-            ),
+              ProfileIcon(),
+            ],
           );
         },
       ),
@@ -123,29 +105,42 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appBarOptions[_selectedIndex],
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Explore',
+    SharedPreferencesProvider sp = SharedPreferencesProvider();
+    return FutureBuilder<void>(
+      future: sp.getData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error fetching profile data"));
+          }
+        return Scaffold(
+          appBar: _appBarOptions[_selectedIndex],
+          body: Center(
+            child: _widgetOptions.elementAt(_selectedIndex),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'My Communities',
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Explore',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.group),
+                label: 'My Communities',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.event),
+                label: 'Upcoming Events',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Upcoming Events',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
+        );
+      },
     );
   }
 }

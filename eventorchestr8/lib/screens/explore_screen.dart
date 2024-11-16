@@ -153,7 +153,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return _buildListSection(
       title: "Popular Community",
-      popular: popular,
+      popular: popular.length>5? popular.sublist(0,5):popular,
       list: allCommunities,
       isCommunity: true,
     );
@@ -168,7 +168,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return _buildListSection(
       title: "Popular Event",
-      popular: popular,
+      popular: popular.length>5? popular.sublist(0,5):popular,
       list: exampleEvents,
       isCommunity: false,
     );

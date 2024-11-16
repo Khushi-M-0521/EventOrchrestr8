@@ -1,8 +1,8 @@
 import 'package:eventorchestr8/screens/home_screen.dart';
-import 'package:eventorchestr8/screens/profilescreen.dart';
 import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/dashed_divider.dart';
+import 'package:eventorchestr8/widgets/profile_icon.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 
@@ -23,17 +23,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     final double amount = ticketFee + convienceFee;
     return Scaffold(
       appBar: AppBar(title: Text('Payment Gateway'), actions: [
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          },
-          icon: Icon(
-            Icons.account_circle,
-            size: 30,
-          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: ProfileIcon(),
         ),
       ]),
       body: Padding(
