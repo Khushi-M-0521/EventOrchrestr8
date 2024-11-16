@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eventorchestr8/screens/specific_community_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -286,13 +287,13 @@ class _CommunityDescriptionScreenState
                                   ))
                               .toList(),
                         ),
-                        SizedBox(height: 80),
+                        SizedBox(height: 20),
                         // Conditionally show Join/Leave or View Community button
                         Center(
                           child: widget.community['created_by'] == currentUserId
                               ? RoundedButton(
                                   onPressed: () {
-                                    // Navigate to view community
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => CommunityScreen(community: widget.community,isOwner: true,)));
                                   },
                                   child: Text('View Community'),
                                 )
@@ -303,7 +304,7 @@ class _CommunityDescriptionScreenState
                                       children: [
                                         RoundedButton(
                                           onPressed: () {
-                                            // Navigate to view community
+                                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => CommunityScreen(community: widget.community,isOwner: false,)));
                                           },
                                           child: Text('View Community'),
                                         ),

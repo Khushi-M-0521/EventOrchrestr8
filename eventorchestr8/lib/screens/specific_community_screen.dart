@@ -1,9 +1,17 @@
 import 'package:eventorchestr8/constants/example_events.dart';
+import 'package:eventorchestr8/screens/community_description_screen.dart';
+import 'package:eventorchestr8/screens/create_event_form.dart';
+import 'package:eventorchestr8/screens/event_description.dart';
+import 'package:eventorchestr8/screens/qr_scanner_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
+import 'package:eventorchestr8/widgets/value_style.dart';
 import 'package:flutter/material.dart';
 
 class CommunityScreen extends StatefulWidget {
-  const CommunityScreen({super.key});
+  const CommunityScreen(
+      {required this.community, required this.isOwner, super.key});
+  final Map<String, dynamic> community;
+  final bool isOwner;
 
   @override
   State<CommunityScreen> createState() => _CommunityScreenState();
@@ -15,12 +23,38 @@ class _CommunityScreenState extends State<CommunityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Community')),
+      appBar: AppBar(
+        leadingWidth: 25,
+        title: InkWell(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) =>
+                  CommunityDescriptionScreen(community: widget.community))),
+          child: Row(
+            children: [
+              ClipOval(
+                child: FadeInImage(
+                  placeholder:
+                      AssetImage('assets/images/transparent_image.png'),
+                  image: NetworkImage(widget.community["imageUrl"]),
+                  fit: BoxFit.cover,
+                  width: 40,
+                  height: 40,
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text(widget.community['name'])
+            ],
+          ),
+        ),
+        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.more_vert))],
+      ),
       body: Stack(
         children: [
           ListView.builder(
             reverse: true,
-            padding: EdgeInsets.only(bottom: 80),
+            padding: EdgeInsets.only(bottom: widget.isOwner? 80:10),
             itemCount: events.length,
             itemBuilder: (context, index) {
               final event = events[index];
@@ -34,7 +68,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   if (showDateCard)
                     Center(
                       child: Card(
-                        margin: EdgeInsets.symmetric(vertical: 10),
+                        margin: EdgeInsets.symmetric(vertical: 5),
                         child: Padding(
                           padding:
                               EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -42,65 +76,138 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         ),
                       ),
                     ),
-                  Card(
-                    margin: EdgeInsets.all(10),
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              FadeInImage(
-                                placeholder: AssetImage(
-                                    'assets/images/transparent_image.png'),
-                                image: NetworkImage(event["imageUrl"]),
-                                fit: BoxFit.cover,
-                                height: 100,
-                                width: 100,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(event['title'],
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    Text(event['theme']),
-                                    Text(formattedDate(event['dateTime'])),
-                                    Text(event['location']),
-                                    Text('${event['attendees']} attendees'),
-                                  ],
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EventDescriptionScreen(
+                              event: event, isRegistered: false)));
+                    },
+                    child: Card(
+                      margin: EdgeInsets.all(10),
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: FadeInImage(
+                                    placeholder: AssetImage(
+                                        'assets/images/transparent_image.png'),
+                                    image: NetworkImage(event["imageUrl"]),
+                                    fit: BoxFit.fill,
+                                    height: 100,
+                                    width: 100,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  // View Stats
-                                },
-                                child: Text('View Stats'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Admit Attendee
-                                },
-                                child: Text('Admit Attendee'),
-                              ),
-                            ],
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(postTime,
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.grey)),
-                          ),
-                        ],
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(event['title'],
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              Text(
+                                                event['theme'],
+                                                style: ValueStyle(),
+                                              ),
+                                            ],
+                                          ),
+                                          if(widget.isOwner)
+                                          IconButton(
+                                              onPressed: () {},
+                                              icon: Icon(
+                                                Icons.edit,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ))
+                                        ],
+                                      ),
+                                      if(!widget.isOwner)
+                                      const SizedBox(height: 5,),
+                                      Text(
+                                        '${formattedDate(event['dateTime'])} | ${formattedTime(event['dateTime'])} |${formatDuration(event['duration'] as Map<String, int>)}',
+                                        style: ValueStyle().copyWith(
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Text(
+                                        event['location'],
+                                        style: ValueStyle(),
+                                      ),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        '${event['peopleRegistered']} attendees',
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Divider(),
+                            if(widget.isOwner)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                FilledButton(
+                                  onPressed: () {
+                                    // View Stats
+                                  },
+                                  child: Text('View Stats'),
+                                ),
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                QRScannerScreen()));
+                                  },
+                                  child: Text('Admit Attendee'),
+                                ),
+                              ],
+                            ),
+                            if(!widget.isOwner)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                FilledButton(
+                                  onPressed: () {
+                                    // Register
+                                  },
+                                  child: Text('Register'),
+                                ),
+                              ],
+                            ),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(postTime,
+                                  style: ValueStyle()
+                                      .copyWith(color: Colors.grey)),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -108,6 +215,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
               );
             },
           ),
+          if(widget.isOwner)
           Positioned(
             bottom: 20,
             right: 0,
@@ -115,7 +223,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Add new event
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateEventPage()));
                 },
                 icon: Icon(Icons.add),
                 label: Text('Post New Event'),
@@ -133,3 +241,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 }
+
+
+/**
+ * time duration
+ * style
+ * community appbar
+ * click to see details
+ * edit icon
+ * QR Scanner
+ * 
+ * attendee pov
+ */

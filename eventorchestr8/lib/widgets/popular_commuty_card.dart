@@ -28,7 +28,7 @@ class PopularCommunityCard extends StatelessWidget {
             child: FadeInImage(
               placeholder: AssetImage("./assets/images/transparent_image.png"),
               image: NetworkImage(imageUrl),
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
               width: double.infinity,
               height: double.infinity,
             ),

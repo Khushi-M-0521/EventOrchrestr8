@@ -8,7 +8,6 @@ import 'package:eventorchestr8/widgets/event_list_card.dart';
 import 'package:eventorchestr8/widgets/popular_commuty_card.dart';
 import 'package:eventorchestr8/widgets/popular_events.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../constants/example_events.dart';
 

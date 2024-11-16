@@ -153,6 +153,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           widget.event['dateTime'])),
                                     ],
                                   ),
+                                  Text(
+                                        formatDuration(widget.event['duration']),
+                                        style: TextStyle(fontSize: 10),
+                                      ),
                                 ],
                               ),
                             ),

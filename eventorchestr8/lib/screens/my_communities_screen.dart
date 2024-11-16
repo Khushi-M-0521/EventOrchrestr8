@@ -115,21 +115,21 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
           });
         },
         children: [
-          _buildCommunityList(joinedCommunities),
-          _buildCommunityList(ownedCommunities),
+          _buildCommunityList(joinedCommunities,false),
+          _buildCommunityList(ownedCommunities,true),
         ],
       ),
     );
   }
 
-  Widget _buildCommunityList(List<Map<String, dynamic>> communities) {
+  Widget _buildCommunityList(List<Map<String, dynamic>> communities, bool isOwner) {
     return ListView.builder(
       itemCount: communities.length,
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const CommunityScreen()));
+                builder: (context) => CommunityScreen(community: communities[index], isOwner: isOwner,)));
           },
           child: CommunityListTile(
             imageUrl: communities[index]["imageUrl"] ?? '',

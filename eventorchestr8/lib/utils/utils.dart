@@ -32,3 +32,9 @@ String formattedMonth(int dateTime) => DateFormat('MMM').format(DateTime.fromMic
 String formattedYear(int dateTime) => DateTime.now().year != DateTime.fromMicrosecondsSinceEpoch(dateTime).year
         ? ', ${DateTime.fromMicrosecondsSinceEpoch(dateTime).year}'
         : '';
+String formatDuration(Map<String, int> duration) {
+  int days = duration['days'] ?? 0;
+  int hours = duration['hours'] ?? 0;
+  int minutes = duration['minutes']??0;
+  return '${days > 0 ? '${days}d' : ''} ${hours > 0 ? '${hours}h ' : ''} ${minutes > 0 ? '${minutes}m' : ''}';
+}
