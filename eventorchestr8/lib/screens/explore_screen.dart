@@ -25,6 +25,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   int _selectedPage = 0;
   late Timer timer;
   List<Map<String, dynamic>> allCommunities = [];
+  List<Map<String, dynamic>> allEvents = [];
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       }
     });
     _fetchCommunities();
+    _fetchEvents();
   }
 
   @override
@@ -52,6 +54,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _mainPageController.dispose();
     timer.cancel();
     super.dispose();
+  }
+
+  Future<void> _fetchEvents() async {
+    try {
+      // Fetch communities from Firestore
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('events').get();
+
+      // Extract community data from Firestore documents
+      setState(() {
+        allEvents = snapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+      });
+    } catch (e) {
+      print("Error fetching events: $e");
+    }
   }
 
   Future<void> _fetchCommunities() async {
@@ -153,14 +172,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return _buildListSection(
       title: "Popular Community",
-      popular: popular.length>5? popular.sublist(0,5):popular,
+      popular: popular.length > 5 ? popular.sublist(0, 5) : popular,
       list: allCommunities,
       isCommunity: true,
     );
   }
 
   Widget _buildEventPage() {
-    List<Map<String, Object>> popular = exampleEvents;
+    List<Map<String, dynamic>> popular = List.from(allEvents);
     popular.sort(
       (a, b) => (b["peopleRegistered"] as int)
           .compareTo(a["peopleRegistered"] as int),
@@ -168,8 +187,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return _buildListSection(
       title: "Popular Event",
-      popular: popular.length>5? popular.sublist(0,5):popular,
-      list: exampleEvents,
+      popular: popular.length > 5 ? popular.sublist(0, 5) : popular,
+      list: allEvents,
       isCommunity: false,
     );
   }
@@ -180,115 +199,124 @@ class _ExploreScreenState extends State<ExploreScreen> {
     required List<Map<String, dynamic>> list,
     required bool isCommunity,
   }) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50),
+    return RefreshIndicator(
+      onRefresh: () async {
+        // Fetch updated data from Firebase
+        await _fetchCommunities();
+        await _fetchEvents();
+      },
+      child: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        // Ensures scrollable even with small content
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  labelText: 'Search',
+                  prefixIcon: Icon(Icons.search),
                 ),
-                labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Text(
-              title,
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 150,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: popular.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => isCommunity
+                              ? CommunityDescriptionScreen(
+                                  community: popular[index],
+                                )
+                              : EventDescriptionScreen(
+                                  event: popular[index],
+                                  isRegistered: false,
+                                ),
+                        ));
+                      },
+                      child: isCommunity
+                          ? PopularCommunityCard(
+                              imageUrl: popular[index]["imageUrl"] as String,
+                              name: popular[index]["name"] as String,
+                              tagline: popular[index]["tagline"] as String,
+                              membersCount: popular[index]["members"] as int,
+                            )
+                          : PopularEventCard(
+                              imageUrl: popular[index]["imageUrl"] as String,
+                              title: popular[index]["title"] as String,
+                              location: popular[index]["location"] as String,
+                              peopleRegistered:
+                                  popular[index]["peopleRegistered"] as int,
+                              dateTime: (popular[index]["dateTime"]),
+                            ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              "All ${isCommunity ? "Communities" : "Events"}",
               style: TextStyle(
                 fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-          SizedBox(
-            height: 150,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: popular.length,
+            ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: list.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => isCommunity
-                            ? CommunityDescriptionScreen(
-                                community: popular[index],
-                              )
-                            : EventDescriptionScreen(
-                                event: popular[index],
-                                isRegistered: false,
-                              ),
-                      ));
-                    },
-                    child: isCommunity
-                        ? PopularCommunityCard(
-                            imageUrl: popular[index]["imageUrl"] as String,
-                            name: popular[index]["name"] as String,
-                            tagline: popular[index]["tagline"] as String,
-                            membersCount: popular[index]["members"] as int,
-                          )
-                        : PopularEventCard(
-                            imageUrl: popular[index]["imageUrl"] as String,
-                            title: popular[index]["title"] as String,
-                            location: popular[index]["location"] as String,
-                            peopleRegistered:
-                                popular[index]["peopleRegistered"] as int,
-                            dateTime: popular[index]["dateTime"] as int,
-                          ),
-                  ),
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => isCommunity
+                          ? CommunityDescriptionScreen(
+                              community: list[index],
+                            )
+                          : EventDescriptionScreen(
+                              event: list[index],
+                              isRegistered: false,
+                            ),
+                    ));
+                  },
+                  child: isCommunity
+                      ? CommunityListTile(
+                          imageUrl: list[index]["imageUrl"] as String,
+                          name: list[index]["name"] as String,
+                          tagline: list[index]["tagline"] as String,
+                          membersCount: list[index]["members"] as int,
+                        )
+                      : EventListTile(
+                          imageUrl: list[index]["imageUrl"] as String,
+                          title: list[index]["title"] as String,
+                          location: list[index]["location"] as String,
+                          peopleRegistered:
+                              list[index]["peopleRegistered"] as int,
+                          dateTime: list[index]["dateTime"],
+                        ),
                 );
               },
             ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            "All ${isCommunity ? "Communities" : "Events"}",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: list.length,
-            itemBuilder: (context, index) {
-              return InkWell(
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => isCommunity
-                        ? CommunityDescriptionScreen(
-                            community: list[index],
-                          )
-                        : EventDescriptionScreen(
-                            event: list[index],
-                            isRegistered: false,
-                          ),
-                  ));
-                },
-                child: isCommunity
-                    ? CommunityListTile(
-                        imageUrl: list[index]["imageUrl"] as String,
-                        name: list[index]["name"] as String,
-                        tagline: list[index]["tagline"] as String,
-                        membersCount: list[index]["members"] as int,
-                      )
-                    : EventListTile(
-                        imageUrl: list[index]["imageUrl"] as String,
-                        title: list[index]["title"] as String,
-                        location: list[index]["location"] as String,
-                        peopleRegistered:
-                            list[index]["peopleRegistered"] as int,
-                        dateTime: list[index]["dateTime"] as int,
-                      ),
-              );
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

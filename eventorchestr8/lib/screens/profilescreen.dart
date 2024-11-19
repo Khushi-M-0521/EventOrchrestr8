@@ -1,39 +1,77 @@
-import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
-
-import 'package:eventorchestr8/provider/auth_provider.dart';
-import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
 import 'package:eventorchestr8/screens/login_screen.dart';
-import 'package:eventorchestr8/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rounded_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool isEditMode = false;
   TextEditingController nameController = TextEditingController();
   TextEditingController ageController = TextEditingController();
-  File? image = null;
+  String profileImagePath = '';
 
-  void selectImage() async {
-    image = await pickImage(context);
+  Future<Map<String, dynamic>> getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userCredentialJson = prefs.getString('user_credential_model');
+    String? userDetailJson = prefs.getString('user_detail_model');
+
+    if (userCredentialJson != null && userDetailJson != null) {
+      Map<String, dynamic> userCredential = jsonDecode(userCredentialJson);
+      Map<String, dynamic> userDetails = jsonDecode(userDetailJson);
+
+      String loginMethod =
+          userCredential.containsKey('email') ? 'email' : 'phone';
+
+      return {
+        'profilePicture': userDetails['profilePicture'],
+        'name': userDetails['name'],
+        'age': userDetails['age'],
+        'loginMethod': loginMethod,
+        'loginValue': loginMethod == 'email'
+            ? userCredential['email']
+            : userCredential['phoneNumber']
+      };
+    } else {
+      return {
+        'profilePicture': '',
+        'name': 'No Name',
+        'age': 0,
+        'loginMethod': 'none',
+        'loginValue': 'No Login Information'
+      };
+    }
+  }
+
+  Future<void> _pickProfileImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
-      SharedPreferencesProvider sp = SharedPreferencesProvider();
-      await sp.updateUserData(context, image: image).then((_) {
-        setState(() {});
+      setState(() {
+        profileImagePath = image.path;
       });
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      Map<String, dynamic> userDetails =
+          jsonDecode(prefs.getString('user_detail_model') ?? '{}');
+      userDetails['profilePicture'] = image.path;
+      await prefs.setString('user_detail_model', jsonEncode(userDetails));
     }
   }
 
   Future<void> signOut(BuildContext context) async {
-    AuthProvider ap = AuthProvider();
-    ap.signOut();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_credential_model');
+    await prefs.remove('user_detail_model');
 
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -41,45 +79,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> saveUserData(String name, int age) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic> userDetails =
+        jsonDecode(prefs.getString('user_detail_model') ?? '{}');
+
+    userDetails['name'] = name;
+    userDetails['age'] = age;
+
+    await prefs.setString('user_detail_model', jsonEncode(userDetails));
+  }
+
   @override
   Widget build(BuildContext context) {
-    SharedPreferencesProvider sp = SharedPreferencesProvider();
-    Map<String, dynamic> userData = sp.getUserData();
-    String profileImage = userData['profilePicture'] ?? '';
-    String name = userData['name'];
-    int age = userData['age'];
-    String? phoneNumber =
-        userData['phoneNumber'] == '' ? null : userData['phoneNumber'];
-    String? email = userData['email'];
-
-    // Set initial values for editing
-    nameController.text = name;
-    ageController.text = age.toString();
     return Scaffold(
       appBar: AppBar(
         title: const Center(
           child: Text(
             "Profile",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
         actions: [
           IconButton(
             icon: Icon(isEditMode ? Icons.check : Icons.edit),
             onPressed: () {
-              if (nameController.text.length < 3) {
-                showSnackBar(context, "Name must have atleast 3 characters");
-              } else if (int.parse(ageController.text) < 18) {
-                showSnackBar(context, "Must have an age of 18");
-              } else if (isEditMode) {
-                // Save the updated data
-                sp.updateUserData(context,
-                    name: nameController.text,
-                    age: int.tryParse(ageController.text)!,
-                    image: image);
+              if (isEditMode) {
+                saveUserData(
+                  nameController.text,
+                  int.tryParse(ageController.text) ?? 0,
+                );
               }
               setState(() {
                 isEditMode = !isEditMode;
@@ -88,124 +117,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 30),
-          // Stack for Profile Image and Edit Icon
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 80,
-                  backgroundImage: profileImage.isNotEmpty
-                      ? NetworkImage(profileImage)
-                      : const AssetImage('assets/images/default_profile.jpg')
-                          as ImageProvider,
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      selectImage();
-                      // Handle profile picture edit (optional)
-                      print("Edit profile picture tapped");
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      radius: 20,
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.black,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: getUserData(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error fetching profile data"));
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(child: Text("Profile data not found"));
+          }
+
+          Map<String, dynamic> userData = snapshot.data!;
+          String profileImage = profileImagePath.isNotEmpty
+              ? profileImagePath
+              : (userData['profilePicture'] ?? '');
+          String name = userData['name'] ?? 'No Name';
+          int age = userData['age'] ?? 0;
+          String loginMethod = userData['loginMethod'] ?? 'none';
+          String loginValue = userData['loginValue'] ?? 'No Login Information';
+
+          nameController.text = name;
+          ageController.text = age.toString();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 30),
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 80,
+                      backgroundImage: profileImage.isNotEmpty
+                          ? FileImage(File(profileImage))
+                          : const AssetImage(
+                                  'assets/images/default_profile.jpg')
+                              as ImageProvider,
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: GestureDetector(
+                        onTap: _pickProfileImage,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 20,
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Name
-          isEditMode
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                    ),
-                  ),
-                )
-              : Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-          const SizedBox(height: 8),
-          // Age
-          isEditMode
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
-                    controller: ageController,
-                    decoration: const InputDecoration(
-                      labelText: 'Age',
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                )
-              : Text(
-                  "Age: $age",
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-          // Phone Number (Display-only, not editable)
-          if (phoneNumber != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              "Phone Number: $phoneNumber",
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          ],
-          // Email (Display-only, not editable)
-          if (email != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              "Email: $email",
-              style: const TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          ],
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: RoundedButton(
-                onPressed: () {
-                  signOut(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text("SIGN OUT"),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.logout),
                   ],
                 ),
               ),
-            ),
-          ),
-        ],
+              const SizedBox(height: 16),
+              isEditMode
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: nameController,
+                        decoration: const InputDecoration(labelText: 'Name'),
+                      ),
+                    )
+                  : Text(
+                      name,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+              const SizedBox(height: 8),
+              isEditMode
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextField(
+                        controller: ageController,
+                        decoration: const InputDecoration(labelText: 'Age'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    )
+                  : Text("Age: $age", style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 8),
+              Text(
+                "${loginMethod == 'email' ? 'Email' : 'Phone Number'}: $loginValue",
+                style: const TextStyle(fontSize: 16),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: RoundedButton(
+                  onPressed: () => signOut(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [Text("SIGN OUT"), Icon(Icons.logout)],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

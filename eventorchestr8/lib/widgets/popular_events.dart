@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -6,9 +7,10 @@ class PopularEventCard extends StatelessWidget {
   final String title;
   final String location;
   final int peopleRegistered;
-  final int dateTime;
+  final Timestamp dateTime;
 
-  const PopularEventCard({super.key, 
+  const PopularEventCard({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.location,
@@ -43,7 +45,7 @@ class PopularEventCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    formattedDate(dateTime),
+                    formattedDate2(dateTime),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12,
@@ -51,7 +53,7 @@ class PopularEventCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formattedTime(dateTime),
+                    formattedTime2(dateTime),
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 12,

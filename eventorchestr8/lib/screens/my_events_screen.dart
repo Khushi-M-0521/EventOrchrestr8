@@ -1,4 +1,4 @@
-import 'package:eventorchestr8/constants/example_events.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/event_description.dart';
 import 'package:eventorchestr8/widgets/event_list_card.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,35 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  List<Map<String, dynamic>> events = exampleEvents;
+  List<Map<String, dynamic>> events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  Future<void> _fetchEvents() async {
+    try {
+      // Fetch events from Firestore
+      final QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('events').get();
+
+      // Convert Firestore data to the correct structure
+      setState(() {
+        events = snapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            ...data,
+            'dateTime': (data['dateTime'] as Timestamp)
+                .toDate(), // Always convert Timestamp to DateTime
+          };
+        }).toList();
+      });
+    } catch (e) {
+      print("Error fetching events: $e");
+    }
+  }
 
   List<Map<String, dynamic>> _getEventsForSelectedDay() {
     if (_selectedDay == null) {
@@ -24,16 +52,14 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
     }
 
     return events.where((event) {
-      DateTime eventDate =
-          DateTime.fromMicrosecondsSinceEpoch(event['dateTime']);
+      DateTime eventDate = event['dateTime']; // Directly use as DateTime
       return isSameDay(eventDate, _selectedDay);
     }).toList();
   }
 
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     return events.where((event) {
-      DateTime eventDate =
-          DateTime.fromMicrosecondsSinceEpoch(event['dateTime']);
+      DateTime eventDate = event['dateTime']; // Directly use as DateTime
       return isSameDay(eventDate, day);
     }).toList();
   }
@@ -53,7 +79,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
               _selectedDay = selectedDay;
-              _focusedDay = focusedDay; // update focusedDay as well
+              _focusedDay = focusedDay; // Update focusedDay as well
             });
           },
           calendarFormat: _calendarFormat,
@@ -71,12 +97,15 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                 margin: const EdgeInsets.all(4.0),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6), // Change this to your desired color
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withOpacity(0.6), // Change this to your desired color
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   '${date.day}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                   ),
                 ),
@@ -97,7 +126,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                     alignment: Alignment.center,
                     child: Text(
                       '$eventCount',
-                      style: TextStyle().copyWith(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 8,
                       ),
@@ -116,20 +145,30 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                   itemBuilder: (context, index) {
                     final event = list[index];
                     return InkWell(
-                      onTap: (){
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => EventDescriptionScreen(event: event,isRegistered: true,)));
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => EventDescriptionScreen(
+                            event: {
+                              ...event,
+                              'dateTime': Timestamp.fromDate(event[
+                                  'dateTime']), // Convert back to Timestamp
+                            },
+                            isRegistered: true,
+                          ),
+                        ));
                       },
                       child: EventListTile(
                         imageUrl: event['imageUrl'],
                         title: event['title'],
                         location: event['location'],
                         peopleRegistered: event['peopleRegistered'],
-                        dateTime: event['dateTime'],
+                        dateTime: Timestamp.fromDate(
+                            event['dateTime']), // Already DateTime
                       ),
                     );
                   },
                 )
-              : Text("No Events!!"),
+              : const Text("No Events!!"),
         ),
       ],
     );

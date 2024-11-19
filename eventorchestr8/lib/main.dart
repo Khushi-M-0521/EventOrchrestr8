@@ -1,5 +1,6 @@
 import 'package:eventorchestr8/constants/color_scheme.dart';
 import 'package:eventorchestr8/provider/auth_provider.dart';
+import 'package:eventorchestr8/screens/home_screen.dart';
 import 'package:eventorchestr8/screens/splash_screen.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
         ),
         themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
-        home: const SplashScreen(),
+        home: SplashScreen(),
       ),
     );
   }

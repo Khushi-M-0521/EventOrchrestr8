@@ -16,13 +16,38 @@ class MyCommunitiesScreen extends StatefulWidget {
 
 class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
   List<Map<String, dynamic>> ownedCommunities = [];
+  List<Map<String, dynamic>> joinedCommunities = [];
   PageController _pageController = PageController(initialPage: 0);
   int _selectedPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _fetchJoinedCommunities();
     _fetchOwnedCommunities();
+  }
+
+  Future<void> _fetchJoinedCommunities() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String userId = user.uid;
+
+      try {
+        // Query Firestore to find communities joined by the user
+        final QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('communities')
+            .where('joined_by', arrayContains: userId)
+            .get();
+
+        setState(() {
+          joinedCommunities = snapshot.docs.map((doc) {
+            return doc.data() as Map<String, dynamic>;
+          }).toList();
+        });
+      } catch (e) {
+        print("Error fetching joined communities: $e");
+      }
+    }
   }
 
   Future<void> _fetchOwnedCommunities() async {
@@ -51,9 +76,6 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> joinedCommunities =
-        exampleCommunities.sublist(4);
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -115,21 +137,25 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
           });
         },
         children: [
-          _buildCommunityList(joinedCommunities,false),
-          _buildCommunityList(ownedCommunities,true),
+          _buildCommunityList(joinedCommunities, false),
+          _buildCommunityList(ownedCommunities, true),
         ],
       ),
     );
   }
 
-  Widget _buildCommunityList(List<Map<String, dynamic>> communities, bool isOwner) {
+  Widget _buildCommunityList(
+      List<Map<String, dynamic>> communities, bool isOwner) {
     return ListView.builder(
       itemCount: communities.length,
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => CommunityScreen(community: communities[index], isOwner: isOwner,)));
+                builder: (context) => CommunityScreen(
+                      community: communities[index],
+                      isOwner: isOwner,
+                    )));
           },
           child: CommunityListTile(
             imageUrl: communities[index]["imageUrl"] ?? '',

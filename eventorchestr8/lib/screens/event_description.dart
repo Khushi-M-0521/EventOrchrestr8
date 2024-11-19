@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/payment_screen.dart';
 import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
@@ -31,11 +32,21 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
 
   void _shareEventDetails() {
     Share.share(
-        'Join us at ${widget.event["title"]} on ${formattedDate(widget.event['dateTime'])}, ${formattedTime(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
+        'Join us at ${widget.event["title"]} on ${formattedDate2(widget.event['dateTime'])}, ${formattedTime2(widget.event['dateTime'])} at ${widget.event['location']}.\n For more details, contact ${widget.event['contacts']['name']} at ${widget.event['contacts']['email']}/${widget.event['contacts']['phone']}. Don’t miss out!');
+  }
+
+  Map<String, int> _castToIntMap(Map<String, dynamic> duration) {
+    return {
+      'hours': duration['hours'] as int,
+      'minutes': duration['minutes'] != null
+          ? duration['minutes'] as int
+          : 0, // Default to 0 if minutes is missing
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.event);
     return Scaffold(
       body: Stack(
         children: [
@@ -138,7 +149,8 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         width: 5,
                                       ),
                                       Text(
-                                        formattedDate(widget.event['dateTime']),
+                                        formattedDate2(
+                                            widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     ],
@@ -149,14 +161,14 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text(formattedTime(
+                                      Text(formattedTime2(
                                           widget.event['dateTime'])),
                                     ],
                                   ),
                                   Text(
-                                        formatDuration(widget.event['duration']),
-                                        style: TextStyle(fontSize: 10),
-                                      ),
+                                    ' ${formatDuration2(_castToIntMap(widget.event['duration']))}',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
                                 ],
                               ),
                             ),
@@ -252,31 +264,66 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 RoundedButton(
-                                  onPressed: () {
-                                     Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                            builder: (context) => !widget.isRegistered?PaymentScreen(
-                                                  event: widget.event,
-                                                ):TicketScreen(leadingWidgetToPreviousScreen: IconButton(onPressed: (){
-                                                  Navigator.of(context).pop();
-                                                }, icon: Icon(Icons.arrow_back)), amount: widget.event["price"]*1.1, event: widget.event, qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',)));
+                                  onPressed: () async {
+                                    if (!widget.isRegistered) {
+                                      // Only proceed if the user is not yet registered
+                                      if (widget.event
+                                              .containsKey('googleFormUrl') &&
+                                          widget.event['googleFormUrl'] !=
+                                              null &&
+                                          widget.event['googleFormUrl']
+                                              .isNotEmpty) {
+                                        final Uri googleFormUrl = Uri.parse(
+                                            widget.event['googleFormUrl']);
+
+                                        try {
+                                          // Open the Google Form
+                                          await launchUrl(googleFormUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication);
+
+                                          // Show instructions to the user
+                                          showSnackBar(context,
+                                              "After submitting the form, return to proceed with payment.");
+
+                                          // Wait for the user to come back (mock submission detection)
+                                          // In a real app, you may handle this with a custom thank-you page redirect
+                                          Future.delayed(Duration(seconds: 5),
+                                              () {
+                                            // Navigate to the payment screen
+                                            Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PaymentScreen(
+                                                      event: widget.event),
+                                            ));
+                                          });
+                                        } catch (e) {
+                                          showSnackBar(context,
+                                              "Could not open the Google Form.");
+                                        }
+                                      } else {
+                                        showSnackBar(context,
+                                            "No Google Form URL provided for this event.");
+                                      }
+                                    }
                                   },
                                   child: !widget.isRegistered
-                                      ? Text('Book Tickets')
-                                      : Text("Veiw Ticket"),
+                                      ? Text('Register')
+                                      : Text("View Ticket"),
                                 ),
                                 if (!widget.isRegistered)
                                   CountdownTimer(
                                     endTime:
-                                        DateTime.fromMicrosecondsSinceEpoch(
-                                                widget.event["dateTime"] as int)
+                                        (widget.event["dateTime"] as Timestamp)
+                                            .toDate()
                                             .millisecondsSinceEpoch,
                                     widgetBuilder: (_, time) {
                                       if (time == null) {
                                         return Text('Registration closed');
                                       }
                                       return Text(
-                                        'Time left: ${time.days} days ${time.hours}:${time.min}:${time.sec}',
+                                        'Time left: ${time.days ?? 0} days ${time.hours ?? 0}:${time.min ?? 0}:${time.sec ?? 0}',
                                         style: TextStyle(fontSize: 12),
                                       );
                                     },

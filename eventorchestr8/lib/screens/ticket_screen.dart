@@ -96,7 +96,8 @@ class _TicketScreenState extends State<TicketScreen> {
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onPrimary,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
                                 ),
                               ),
                               Text(
@@ -129,7 +130,9 @@ class _TicketScreenState extends State<TicketScreen> {
                     size: 300.0,
                     backgroundColor: Colors.white,
                   ),
-                  SizedBox(height: 10,),
+                  SizedBox(
+                    height: 10,
+                  ),
                   DashedTicketDivider(
                     color: Theme.of(context).colorScheme.onPrimary,
                   ),
@@ -184,7 +187,7 @@ class _TicketScreenState extends State<TicketScreen> {
                                       ),
                                     ),
                                     Text(
-                                      formattedDate(widget.event["dateTime"]),
+                                      formattedDate2(widget.event["dateTime"]),
                                       style: ValueStyle().copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -240,7 +243,7 @@ class _TicketScreenState extends State<TicketScreen> {
                                       ),
                                     ),
                                     Text(
-                                      formattedTime(widget.event["dateTime"]),
+                                      formattedTime2(widget.event["dateTime"]),
                                       style: ValueStyle().copyWith(
                                         color: Theme.of(context)
                                             .colorScheme

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -6,9 +7,10 @@ class EventListTile extends StatelessWidget {
   final String title;
   final String location;
   final int peopleRegistered;
-  final int dateTime;
+  final Timestamp dateTime;
 
-  const EventListTile({super.key, 
+  const EventListTile({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.location,
@@ -18,7 +20,6 @@ class EventListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: ListTile(
@@ -86,7 +87,7 @@ class EventListTile extends StatelessWidget {
                 ),
               ),
               Text(
-                formattedMonth(dateTime)+formattedYear(dateTime),
+                formattedMonth(dateTime) + formattedYear(dateTime),
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context).colorScheme.primary,

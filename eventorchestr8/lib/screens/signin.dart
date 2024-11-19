@@ -71,7 +71,8 @@ class _SignInScreenState extends State<SignInScreen> {
       String email = emailController.text.trim();
       int password = passwordController.text.trim().hashCode;
 
-      if (EmailValidator.validate(email) && passwordController.text.isNotEmpty) {
+      if (EmailValidator.validate(email) &&
+          passwordController.text.isNotEmpty) {
         try {
           // Await email sign-in method from AuthProvider
           await authProvider.signInWithEmailAndPassword(

@@ -18,7 +18,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
-    final ticketFee = widget.event["price"] as int;
+    final ticketFee = int.parse(widget.event["price"]);
     final double convienceFee = ticketFee * 0.1;
     final double amount = ticketFee + convienceFee;
     return Scaffold(
@@ -66,7 +66,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '${formattedDate(widget.event["dateTime"])} | ${formattedTime(widget.event["dateTime"])}',
+                          '${formattedDate2(widget.event["dateTime"])} | ${formattedTime2(widget.event["dateTime"])}',
                           style: TextStyle(
                             fontSize: 16,
                             //color: Colors.blue[800],
@@ -208,9 +208,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
                         builder: (context) => TicketScreen(
-                          event: widget.event,
-                          amount: amount,
-                          qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',
+                              event: widget.event,
+                              amount: amount,
+                              qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',
                               leadingWidgetToPreviousScreen: IconButton(
                                   onPressed: () {
                                     Navigator.of(context).pushAndRemoveUntil(

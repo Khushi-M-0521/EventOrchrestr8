@@ -77,6 +77,7 @@ class _CommunityFormState extends State<CommunityForm> {
             'created_at': FieldValue.serverTimestamp(),
             'created_by': userId, // Store the user ID who created the community
             'imageUrl': imageUrl, // Store image URL
+            'joined_by': null, // Add joined_by field with null value initially
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,9 +124,12 @@ class _CommunityFormState extends State<CommunityForm> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create Community"),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: Text(
+          "Create Community",
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.secondaryContainer),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -153,21 +157,40 @@ class _CommunityFormState extends State<CommunityForm> {
                   GestureDetector(
                     onTap: _pickImage,
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 20.0),
+                      height: 200, // Increased height for better visibility
+                      width: double.infinity, // Make it occupy full width
                       decoration: BoxDecoration(
                         border: Border.all(color: borderColor),
                         borderRadius: BorderRadius.circular(8),
+                        color: Colors
+                            .grey[200], // Background color for better contrast
                       ),
                       child: _image == null
-                          ? Center(child: Text('Pick an image'))
-                          : Image.file(
-                              _image!,
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
+                          ? Center(
+                              child: Text(
+                                'Pick an image',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            )
+                          : ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(8), // Rounded corners
+                              child: Image.file(
+                                _image!,
+                                width:
+                                    double.infinity, // Fit to container width
+                                height: 200, // Fit to container height
+                                fit: BoxFit
+                                    .cover, // Ensure the image scales properly
+                              ),
                             ),
                     ),
                   ),
+
                   SizedBox(height: 20),
                   _buildTextField(
                     label: 'Community Name',

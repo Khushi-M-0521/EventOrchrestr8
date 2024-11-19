@@ -10,6 +10,14 @@ class SharedPreferencesProvider extends ChangeNotifier {
 
   static Map<String, dynamic> _userDetails = {};
   Map<String, dynamic> get userDetails => _userDetails;
+  // Map<String, String> userDetails = {
+  //   'profilePicture': '',
+  // };
+
+  void updateProfilePicture(String newUrl) {
+    userDetails['profilePicture'] = newUrl;
+    notifyListeners();
+  }
 
   Future<void>? getData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
