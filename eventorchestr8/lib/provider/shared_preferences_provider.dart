@@ -33,7 +33,8 @@ class SharedPreferencesProvider extends ChangeNotifier {
       'profilePicture': userDetails['profilePicture'],
       'name': userDetails['name'],
       'age': userDetails['age'],
-      'phoneNumber': userCredential['phoneNumber']
+      'phoneNumber': userCredential['phoneNumber'],
+      'email':userCredential['email']
     };
   }
 

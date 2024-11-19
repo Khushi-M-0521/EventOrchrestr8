@@ -353,14 +353,3 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 }
-
-/**
- * time duration
- * style
- * community appbar
- * click to see details
- * edit icon
- * QR Scanner
- *
- * attendee pov
- */
