@@ -151,24 +151,43 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
-                      InkWell(
-                        onTap: () => selectImage(),
-                        child: image == null
-                            ? CircleAvatar(
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.primary,
-                                radius: 50,
-                                child: const Icon(
-                                  Icons.account_circle,
-                                  size: 50,
-                                  color: Colors.white,
+                      Stack(children: [
+                        InkWell(
+                          onTap: () => selectImage(),
+                          child: image == null
+                              ? CircleAvatar(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  radius: 50,
+                                  child: const Icon(
+                                    Icons.account_circle,
+                                    size: 50,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : CircleAvatar(
+                                  backgroundImage: FileImage(image!),
+                                  radius: 50,
                                 ),
-                              )
-                            : CircleAvatar(
-                                backgroundImage: FileImage(image!),
-                                radius: 50,
+                        ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              selectImage();
+                            },
+                            child: CircleAvatar(
+                              backgroundColor: Colors.white,
+                              radius: 20,
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: Colors.black,
                               ),
-                      ),
+                            ),
+                          ),
+                        ),
+                      ]),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(

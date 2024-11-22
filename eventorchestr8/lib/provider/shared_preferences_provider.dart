@@ -10,6 +10,11 @@ class SharedPreferencesProvider extends ChangeNotifier {
 
   static Map<String, dynamic> _userDetails = {};
   Map<String, dynamic> get userDetails => _userDetails;
+
+  String get currentUid => _userDetails["uid"];
+  
+  bool _isLoading=false;
+  bool get isLoading => _isLoading;
   // Map<String, String> userDetails = {
   //   'profilePicture': '',
   // };
@@ -57,6 +62,18 @@ class SharedPreferencesProvider extends ChangeNotifier {
             print(_userDetails['profilePicture']);
           })
         : null;
+    notifyListeners();
+  }
+
+  Future<void> createCommunity(String community_id) async {
+    _isLoading=true;
+    notifyListeners();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> owned_communites=_userDetails["owned_communities"]??[];
+    owned_communites.add(community_id);
+    _userDetails["owned_communities"]=owned_communites;
+    await prefs.setString('user_detail_model', jsonEncode(userDetails));
+    _isLoading=false;
     notifyListeners();
   }
 }

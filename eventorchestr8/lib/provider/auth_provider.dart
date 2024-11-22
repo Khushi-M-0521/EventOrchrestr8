@@ -92,15 +92,18 @@ class AuthProvider extends ChangeNotifier {
       ..recipients.add(email)
       ..subject = 'Verification Code'
       ..text = 'Your OTP code is $otp';
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OTPScreen(
+          verificationId: otp,
+          email: email,
+        ),
+      ),
+    );
     try {
       _firebaseAuth.createUserWithEmailAndPassword(email: email, password: otp);
       await send(message, smtpServer);
       print("OTP sent to $email");
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => OTPScreen(
-                verificationId: otp,
-                email: email,
-              )));
     } catch (e) {
       showSnackBar(context, e.toString());
     }
@@ -141,6 +144,24 @@ class AuthProvider extends ChangeNotifier {
     } on FirebaseAuthException catch (e) {
       _isLoading = false;
       showSnackBar(context, e.message.toString());
+    }
+  }
+
+  Future<void> deleteUser({
+    required String otp,
+    required String? email,
+  }) async {
+    if (email != null) {
+      AuthCredential creds =
+          EmailAuthProvider.credential(email: email, password: otp);
+      _firebaseAuth.signInWithCredential(creds).then((cred) {
+        try{
+          cred.user!.delete();
+        }
+        catch(e){
+          print(e);
+        }
+      });
     }
   }
 

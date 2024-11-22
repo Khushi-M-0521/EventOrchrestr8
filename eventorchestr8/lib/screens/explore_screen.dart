@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eventorchestr8/provider/firebase_provider.dart';
 import 'package:eventorchestr8/screens/community_description_screen.dart';
 import 'package:eventorchestr8/screens/event_description.dart';
 import 'package:eventorchestr8/widgets/community_list_card.dart';
@@ -8,8 +7,6 @@ import 'package:eventorchestr8/widgets/event_list_card.dart';
 import 'package:eventorchestr8/widgets/popular_commuty_card.dart';
 import 'package:eventorchestr8/widgets/popular_events.dart';
 import 'package:flutter/material.dart';
-
-import '../constants/example_events.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -21,6 +18,7 @@ class ExploreScreen extends StatefulWidget {
 class _ExploreScreenState extends State<ExploreScreen> {
   final PageController _pageController = PageController(viewportFraction: 0.8);
   final PageController _mainPageController = PageController(initialPage: 0);
+  late FirebaseProvider fp;
   int _currentPage = 0;
   int _selectedPage = 0;
   late Timer timer;
@@ -44,8 +42,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
         );
       }
     });
-    _fetchCommunities();
-    _fetchEvents();
+    fp = FirebaseProvider();
+    fp.fetchCommunities().then((communities) {
+      setState(() {
+        allCommunities = communities;
+      });
+    });
+    fp.fetchEvents().then((events) {
+      setState(() {
+        allEvents = events;
+      });
+    });
   }
 
   @override
@@ -54,40 +61,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     _mainPageController.dispose();
     timer.cancel();
     super.dispose();
-  }
-
-  Future<void> _fetchEvents() async {
-    try {
-      // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('events').get();
-
-      // Extract community data from Firestore documents
-      setState(() {
-        allEvents = snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-      });
-    } catch (e) {
-      print("Error fetching events: $e");
-    }
-  }
-
-  Future<void> _fetchCommunities() async {
-    try {
-      // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('communities').get();
-
-      // Extract community data from Firestore documents
-      setState(() {
-        allCommunities = snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-      });
-    } catch (e) {
-      print("Error fetching communities: $e");
-    }
   }
 
   @override
@@ -169,6 +142,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     popular.sort(
       (a, b) => (b["members"] as int).compareTo(a["members"] as int),
     );
+    // List<Map<String, dynamic>> popular = [];
+    // fp.fetchPopularCommunities().then((communities) {
+    //   popular = communities;
+    // });
+    print(popular);
 
     return _buildListSection(
       title: "Popular Community",
@@ -184,6 +162,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
       (a, b) => (b["peopleRegistered"] as int)
           .compareTo(a["peopleRegistered"] as int),
     );
+    // List<Map<String, dynamic>> popular = [];
+    // fp.fetchPopularEvents().then((events) {
+    //   popular = events;
+    // });
 
     return _buildListSection(
       title: "Popular Event",
@@ -202,8 +184,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return RefreshIndicator(
       onRefresh: () async {
         // Fetch updated data from Firebase
-        await _fetchCommunities();
-        await _fetchEvents();
+        fp.fetchCommunities().then((communities) {
+          setState(() {
+            allCommunities = communities;
+          });
+        });
+        fp.fetchEvents().then((events) {
+          setState(() {
+            allEvents = events;
+          });
+        });
       },
       child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),
@@ -305,7 +295,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           membersCount: list[index]["members"] as int,
                         )
                       : EventListTile(
-                          imageUrl: list[index]["imageUrl"] as String,
+                          imageUrl: list[index]["imageUrl"] != null
+                              ? list[index]["imageUrl"] as String
+                              : '',
                           title: list[index]["title"] as String,
                           location: list[index]["location"] as String,
                           peopleRegistered:

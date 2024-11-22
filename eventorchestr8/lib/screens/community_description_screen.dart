@@ -298,25 +298,24 @@ class _CommunityDescriptionScreenState
                                   child: Text('View Community'),
                                 )
                               : _isJoined
-                                  ? Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        RoundedButton(
-                                          onPressed: () {
-                                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => CommunityScreen(community: widget.community,isOwner: false,)));
-                                          },
-                                          child: Text('View Community'),
-                                        ),
-                                        SizedBox(
-                                          width: 25,
-                                        ),
-                                        RoundedButton(
-                                          onPressed: _leaveCommunity,
-                                          child: Text('Leave Community'),
-                                        ),
-                                      ],
-                                    )
+                                  ? Expanded(
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          RoundedButton(
+                                            onPressed: () {
+                                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => CommunityScreen(community: widget.community,isOwner: false,)));
+                                            },
+                                            child: Text('View Community'),
+                                          ),
+                                          RoundedButton(
+                                            onPressed: _leaveCommunity,
+                                            child: Text('Leave Community'),
+                                          ),
+                                        ],
+                                      ),
+                                  )
                                   : RoundedButton(
                                       onPressed: _joinCommunity,
                                       child: Text('Join Community'),

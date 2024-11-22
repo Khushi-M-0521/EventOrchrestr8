@@ -14,14 +14,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  late SharedPreferencesProvider sp;
 
-  static final List<Widget> _widgetOptions = <Widget>[
+  @override
+  void initState(){
+    sp = SharedPreferencesProvider();
+    super.initState();
+  } 
+
+  
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+  final List<Widget> _widgetOptions = <Widget>[
     ExploreScreen(),
     MyCommunitiesScreen(),
     MyEventsScreen(),
   ];
 
-  static final List<AppBar> _appBarOptions = <AppBar>[
+  final List<AppBar> _appBarOptions = <AppBar>[
     //ExploreScreen.appBar(),
     AppBar(
       toolbarHeight: 40,
@@ -34,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Hey User,",
+                    "Hey ${sp.userDetails["name"]},",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -97,15 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    SharedPreferencesProvider sp = SharedPreferencesProvider();
     return FutureBuilder<void>(
       future: sp.getData(),
       builder: (context, snapshot) {

@@ -83,5 +83,5 @@ String formatDuration2(Map<String, int> duration) {
   int days = duration['days'] ?? 0;
   int hours = duration['hours'] ?? 0; // Extract hours
   int minutes = duration['minutes'] ?? 0; // Extract minutes (if applicable)
-  return '${days}d ${hours}h ${minutes}m'; // e.g., "1h 30m"
+  return '${days > 0 ? '${days}d' : ''} ${hours > 0 ? '${hours}h ' : ''} ${minutes > 0 ? '${minutes}m' : ''}'; // e.g., "1h 30m"
 }

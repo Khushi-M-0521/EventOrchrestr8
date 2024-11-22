@@ -1,6 +1,7 @@
 import 'package:eventorchestr8/constants/color_scheme.dart';
 import 'package:eventorchestr8/provider/auth_provider.dart';
-import 'package:eventorchestr8/screens/home_screen.dart';
+import 'package:eventorchestr8/provider/firebase_provider.dart';
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
 import 'package:eventorchestr8/screens/splash_screen.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,6 +27,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context)=> SharedPreferencesProvider()),
+        ChangeNotifierProvider(create: (context) => FirebaseProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

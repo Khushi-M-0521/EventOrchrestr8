@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eventorchestr8/provider/firebase_provider.dart';
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:eventorchestr8/widgets/community_list_card.dart';
 import 'package:eventorchestr8/screens/create_community.dart';
 import 'package:eventorchestr8/screens/specific_community_screen.dart';
-
-import '../constants/example_communites.dart';
 
 class MyCommunitiesScreen extends StatefulWidget {
   const MyCommunitiesScreen({super.key});
@@ -17,7 +17,7 @@ class MyCommunitiesScreen extends StatefulWidget {
 class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
   List<Map<String, dynamic>> ownedCommunities = [];
   List<Map<String, dynamic>> joinedCommunities = [];
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
   int _selectedPage = 0;
 
   @override
@@ -51,21 +51,40 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
   }
 
   Future<void> _fetchOwnedCommunities() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      String userId = user.uid;
-
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('communities')
-          .where('created_by', isEqualTo: userId)
-          .get();
-
-      setState(() {
-        ownedCommunities = snapshot.docs.map((doc) {
-          return doc.data() as Map<String, dynamic>;
-        }).toList();
-      });
+    SharedPreferencesProvider sp = SharedPreferencesProvider();
+    FirebaseProvider fp = FirebaseProvider();
+    List<Map<String, dynamic>> communities = [];
+    print(sp.userDetails["owned_communities"]);
+    if (sp.userDetails["owned_communities"] != null) {
+      for (var communityId
+          in (sp.userDetails["owned_communities"] as List<dynamic>)) {
+        await fp.fetchCommunity(communityId).then((community) {
+          communities.add(community);
+          print(communities);
+          setState(() {
+            ownedCommunities = communities;
+          });
+        });
+      }
     }
+
+    // User? user = FirebaseAuth.instance.currentUser;
+    // if (user != null) {
+    //   String userId = user.uid;
+    //   print(userId);
+
+    //   final QuerySnapshot snapshot = await FirebaseFirestore.instance
+    //       .collection('communities')
+    //       .where('created_by', isEqualTo: userId)
+    //       .get();
+
+    //   setState(() {
+    //     ownedCommunities = snapshot.docs.map((doc) {
+    //       return doc.data() as Map<String, dynamic>;
+    //     }).toList();
+    //     print(ownedCommunities);
+    //   });
+    // }
   }
 
   @override
@@ -129,17 +148,24 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
               child: Icon(Icons.add),
             )
           : null,
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
+      body: RefreshIndicator(
+        onRefresh: () async {
           setState(() {
-            _selectedPage = index;
+            _fetchOwnedCommunities();
           });
         },
-        children: [
-          _buildCommunityList(joinedCommunities, false),
-          _buildCommunityList(ownedCommunities, true),
-        ],
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            setState(() {
+              _selectedPage = index;
+            });
+          },
+          children: [
+            _buildCommunityList(joinedCommunities, false),
+            _buildCommunityList(ownedCommunities, true),
+          ],
+        ),
       ),
     );
   }
@@ -149,6 +175,10 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
     return ListView.builder(
       itemCount: communities.length,
       itemBuilder: (context, index) {
+        print(communities[index]);
+        print(
+          communities[index]["imageUrl"] ?? '',
+        );
         return InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(

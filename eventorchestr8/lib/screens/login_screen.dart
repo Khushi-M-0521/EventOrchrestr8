@@ -98,13 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
     TextField emailField = TextField(
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
-      onEditingComplete: () {
-        setState(() {
-          correctInput=EmailValidator.validate(emailController.text);
-        });
-      },
       onChanged: (value) {
         setState(() {
+          correctInput=EmailValidator.validate(emailController.text);
           emailController.text = value;
         });
       },
@@ -136,10 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
       onChanged: (value) {
         setState(() {
           phoneController.text = value;
-        });
-      },
-      onEditingComplete: (){
-        setState(() {
           correctInput=phoneController.text.trim().length == selectedCountry.example.length;
         });
       },
@@ -190,75 +182,81 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const TitleText(text: "Login Account"),
-                  const SubtitleText(text: "Hello, Welcome to EventOrchetr8"),
-                  const SizedBox(height: 30),
-                  Container(
-                    width: double.infinity,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: Colors.grey[200],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        children: [
-                          switched
-                              ? textButton("EMAIL ID")
-                              : filledButton("EMAIL ID"),
-                          const Spacer(),
-                          !switched
-                              ? textButton("PHONE NUMBER")
-                              : filledButton("PHONE NUMBER"),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: !switched
-                        ? const Text("Email Address")
-                        : const Text("Phone Number"),
-                  ),
-                  !switched ? emailField : phoneField,
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: RoundedButton(
-                      onPressed: () {
-                        print("typing");
-                        switched?sendPhoneNumber():sendEmail();
-                      },
-                      child: const Text("VERIFY"),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints( maxHeight: MediaQuery.of(context).size.height,),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
               children: [
-                const SubtitleText(text: "Already have an Account?"),
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => SignInScreen()));
-                    },
-                    child: const Text("Sign in"))
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const TitleText(text: "Login Account"),
+                      const SubtitleText(text: "Hello, Welcome to EventOrchetr8"),
+                      const SizedBox(height: 30),
+                      Container(
+                        width: double.infinity,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: Colors.grey[200],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Row(
+                            children: [
+                              switched
+                                  ? textButton("EMAIL ID")
+                                  : filledButton("EMAIL ID"),
+                              const Spacer(),
+                              !switched
+                                  ? textButton("PHONE NUMBER")
+                                  : filledButton("PHONE NUMBER"),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: !switched
+                            ? const Text("Email Address")
+                            : const Text("Phone Number"),
+                      ),
+                      !switched ? emailField : phoneField,
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: RoundedButton(
+                          onPressed: () {
+                            print("typing");
+                            switched?sendPhoneNumber():sendEmail();
+                          },
+                          child: const Text("VERIFY"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SubtitleText(text: "Already have an Account?"),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => SignInScreen()));
+                        },
+                        child: const Text("Sign in"))
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

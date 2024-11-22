@@ -24,19 +24,28 @@ class _OTPScreenState extends State<OTPScreen> {
   String? otpCode;
   int forTime = 120;
   bool verifying = false;
+  late Timer timer;
 
   @override
   void initState() {
     super.initState();
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (forTime > 0) {
         setState(() {
           forTime--;
         });
       } else {
+        AuthProvider ap= AuthProvider();
+        ap.deleteUser(otp: widget.verificationId,email:widget.email);
         mounted && !verifying ? Navigator.of(context).pop() : null;
       }
     });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 
   void verifyOtp(BuildContext context, String userOtp) {

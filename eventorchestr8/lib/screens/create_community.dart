@@ -1,17 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:eventorchestr8/provider/firebase_provider.dart';
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
+import 'package:eventorchestr8/utils/utils.dart';
 import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Storage
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:provider/provider.dart';
+
 class CommunityForm extends StatefulWidget {
+  const CommunityForm({super.key});
+
   @override
-  _CommunityFormState createState() => _CommunityFormState();
+  State<CommunityForm> createState() => _CommunityFormState();
 }
 
 class _CommunityFormState extends State<CommunityForm> {
   final _formKey = GlobalKey<FormState>();
+  late FirebaseProvider fp;
 
   // Controllers for each input field
   final TextEditingController _nameController = TextEditingController();
@@ -28,6 +34,12 @@ class _CommunityFormState extends State<CommunityForm> {
   File? _image;
 
   @override
+  void initState() {
+    fp = FirebaseProvider();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     // Dispose controllers when the widget is disposed
     _nameController.dispose();
@@ -37,16 +49,9 @@ class _CommunityFormState extends State<CommunityForm> {
     super.dispose();
   }
 
-  // Function to pick an image from the gallery
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (image != null) {
-        _image = File(image.path); // Store the picked image as File
-      }
-    });
+  void selectImage() async {
+    _image = await pickImage(context);
+    setState(() {});
   }
 
   Future<void> _createCommunity() async {
@@ -57,81 +62,59 @@ class _CommunityFormState extends State<CommunityForm> {
         _image != null) {
       try {
         // Fetch the current user UID
-        User? user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          String userId = user.uid; // Get the current user ID
+        // Get the current user ID
+        SharedPreferencesProvider sp = SharedPreferencesProvider();
+        String userId = sp.currentUid;
 
-          // Upload the image to Firebase Storage and get the URL
-          String imageUrl = await _uploadImageToStorage();
+        // Upload the image to Firebase Storage and get the URL
+        String imageUrl = await fp.uploadImageToStorage("community", _image!);
 
-          // Add community data to Firestore along with the user ID
-          await firestore.collection('communities').add({
-            'name': _nameController.text,
-            'description': _descriptionController.text,
-            'members': _members,
-            'tagline': _taglineController.text,
-            'tags': _tagsController.text
-                .split(',')
-                .map((tag) => tag.trim())
-                .toList(),
-            'created_at': FieldValue.serverTimestamp(),
-            'created_by': userId, // Store the user ID who created the community
-            'imageUrl': imageUrl, // Store image URL
-            'joined_by': null, // Add joined_by field with null value initially
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Community Created!")),
-          );
+        // Add community data to Firestore along with the user ID
+        fp.createCommunity({
+          'name': _nameController.text,
+          'description': _descriptionController.text,
+          'members': _members,
+          'tagline': _taglineController.text,
+          'tags':
+              _tagsController.text.split(',').map((tag) => tag.trim()).toList(),
+          'created_at': FieldValue.serverTimestamp(),
+          'created_by': userId, // Store the user ID who created the community
+          'imageUrl': imageUrl, // Store image URL
+          'joined_by': null, // Add joined_by field with null value initially
+        }).timeout(Duration(seconds: 10)).then((_) {
+            showSnackBar(context, "Community Created!");
           Navigator.of(context).pop();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("User not authenticated")),
-          );
-        }
+        });
       } catch (e) {
-        print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create Community")),
-        );
+        showSnackBar(context, "Failed to create Community $e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Missing details or no image selected")),
-      );
+      showSnackBar(context, "Missing details or no image selected");
     }
-  }
-
-  Future<String> _uploadImageToStorage() async {
-    // Create a unique name for the image
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference storageRef = storage.ref().child('community_images/$fileName');
-
-    // Upload the image to Firebase Storage
-    UploadTask uploadTask = storageRef.putFile(_image!);
-
-    // Wait for the upload to complete
-    TaskSnapshot snapshot = await uploadTask;
-
-    // Get the image URL after upload
-    String downloadUrl = await snapshot.ref.getDownloadURL();
-    return downloadUrl;
   }
 
   @override
   Widget build(BuildContext context) {
     final Color borderColor = Theme.of(context).colorScheme.outline;
-
+    var isLoading =
+        Provider.of<SharedPreferencesProvider>(context, listen: true).isLoading;
+    print("isloading= "+isLoading.toString());
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        //automaticallyImplyLeading: false,
         title: Text(
           "Create Community",
           style: TextStyle(
               color: Theme.of(context).colorScheme.secondaryContainer),
         ),
       ),
-      body: Padding(
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            )
+          :Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 4,
@@ -155,9 +138,11 @@ class _CommunityFormState extends State<CommunityForm> {
                   SizedBox(height: 20),
                   // Image picker button
                   GestureDetector(
-                    onTap: _pickImage,
+                    onTap: selectImage,
                     child: Container(
-                      height: 200, // Increased height for better visibility
+                      height: _image == null
+                          ? 50
+                          : 200, // Increased height for better visibility
                       width: double.infinity, // Make it occupy full width
                       decoration: BoxDecoration(
                         border: Border.all(color: borderColor),
@@ -185,7 +170,7 @@ class _CommunityFormState extends State<CommunityForm> {
                                     double.infinity, // Fit to container width
                                 height: 200, // Fit to container height
                                 fit: BoxFit
-                                    .cover, // Ensure the image scales properly
+                                    .fill, // Ensure the image scales properly
                               ),
                             ),
                     ),
@@ -228,6 +213,7 @@ class _CommunityFormState extends State<CommunityForm> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
+                    minLines: 1,
                     maxLines: 4,
                   ),
                   SizedBox(height: 30),

@@ -306,6 +306,27 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         showSnackBar(context,
                                             "No Google Form URL provided for this event.");
                                       }
+                                    } else {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => TicketScreen(
+                                            leadingWidgetToPreviousScreen:
+                                                IconButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    icon:
+                                                        Icon(Icons.arrow_back)),
+                                            amount: double.parse(widget
+                                                    .event["price"]
+                                                    .toString()) *
+                                                1.1,
+                                            event: widget.event,
+                                            qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',
+                                          ),
+                                        ),
+                                      );
                                     }
                                   },
                                   child: !widget.isRegistered
