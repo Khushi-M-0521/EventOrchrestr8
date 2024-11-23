@@ -35,9 +35,11 @@ class _OTPScreenState extends State<OTPScreen> {
           forTime--;
         });
       } else {
-        AuthProvider ap= AuthProvider();
+        if(mounted && !verifying ){
+          AuthProvider ap= AuthProvider();
         ap.deleteUser(otp: widget.verificationId,email:widget.email);
-        mounted && !verifying ? Navigator.of(context).pop() : null;
+        Navigator.of(context).pop();
+        }
       }
     });
   }

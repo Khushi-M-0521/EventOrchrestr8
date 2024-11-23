@@ -7,7 +7,7 @@ class EventListTile extends StatelessWidget {
   final String title;
   final String location;
   final int peopleRegistered;
-  final Timestamp dateTime;
+  final dynamic dateTime;
 
   const EventListTile({
     super.key,
@@ -25,9 +25,11 @@ class EventListTile extends StatelessWidget {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
-          child: FadeInImage.assetNetwork(
-            placeholder: 'assets/images/transparent_image.png',
-            image: imageUrl,
+          child: FadeInImage(
+            placeholder: AssetImage('assets/images/transparent_image.png'),
+            image: imageUrl != "" 
+                ? NetworkImage(imageUrl)
+                : AssetImage('assets/images/transparent_image.png'),
             width: 60,
             height: 60,
             fit: BoxFit.cover,
@@ -79,7 +81,9 @@ class EventListTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                formattedDay(dateTime),
+                dateTime.runtimeType == Timestamp
+                    ? formattedDay2(dateTime)
+                    : formattedDay(dateTime),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -87,7 +91,12 @@ class EventListTile extends StatelessWidget {
                 ),
               ),
               Text(
-                formattedMonth(dateTime) + formattedYear(dateTime),
+                (dateTime.runtimeType == Timestamp
+                        ? formattedMonth2(dateTime)
+                        : formattedMonth(dateTime)) +
+                    (dateTime.runtimeType == Timestamp
+                        ? formattedYear2(dateTime)
+                        : formattedYear(dateTime)),
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context).colorScheme.primary,

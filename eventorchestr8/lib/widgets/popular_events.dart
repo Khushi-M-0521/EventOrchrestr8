@@ -7,7 +7,7 @@ class PopularEventCard extends StatelessWidget {
   final String title;
   final String location;
   final int peopleRegistered;
-  final Timestamp dateTime;
+  final dynamic dateTime;
 
   const PopularEventCard({
     super.key,
@@ -45,7 +45,10 @@ class PopularEventCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    formattedDate2(dateTime),
+                    dateTime.runtimeType ==Timestamp?
+                                        formattedDate2(
+                                            dateTime):formattedDate(
+                                            dateTime),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12,
@@ -53,7 +56,10 @@ class PopularEventCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    formattedTime2(dateTime),
+                    dateTime.runtimeType ==Timestamp?
+                                        formattedTime2(
+                                            dateTime):formattedTime(
+                                            dateTime),
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 12,

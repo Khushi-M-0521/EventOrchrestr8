@@ -1,23 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:eventorchestr8/screens/home_screen.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:eventorchestr8/provider/firebase_provider.dart';
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
+import 'package:eventorchestr8/screens/specific_community_screen.dart';
+import 'package:eventorchestr8/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 class CreateEventPage extends StatefulWidget {
   final String communityId; // Assuming communityId is passed to this screen
 
-  CreateEventPage({required this.communityId});
+  const CreateEventPage({super.key, required this.communityId});
 
   @override
-  _CreateEventPageState createState() => _CreateEventPageState();
+  State<CreateEventPage> createState() => _CreateEventPageState();
 }
 
 class _CreateEventPageState extends State<CreateEventPage> {
-  FilePickerResult? _filePickerResult;
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -33,8 +30,8 @@ class _CreateEventPageState extends State<CreateEventPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   bool isUploading = false;
-
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  int? dateTime;
+  FirebaseProvider fp=FirebaseProvider();
 
   // Function to select Date and Time
   Future<void> _selectDateTime(BuildContext context) async {
@@ -42,7 +39,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
+      lastDate: DateTime(DateTime.now().year + 1),
     );
     if (pickedDate != null) {
       final TimeOfDay? pickedTime =
@@ -56,26 +53,19 @@ class _CreateEventPageState extends State<CreateEventPage> {
           pickedTime.minute,
         );
         setState(() {
-          _dateTimeController.text = selectedDateTime.toString();
+           dateTime = selectedDateTime.microsecondsSinceEpoch;
+          _dateTimeController.text =
+              "${formattedDate(dateTime!)} ${formattedTime(dateTime!)}";
         });
       }
     }
   }
 
-  // Open file picker to select event image
-  void _openFilePicker() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-    );
-    setState(() {
-      _filePickerResult = result;
-    });
+  File? _image;
+  void selectImage() async {
+    _image = await pickImage(context);
+    setState(() {});
   }
-  // void selectImage() async {
-  //   image = await pickImage(context);
-  //   setState(() {});
-  // }
-
   // Function to create event and store it in Firebase
 
   Future<void> _createEvent() async {
@@ -85,40 +75,34 @@ class _CreateEventPageState extends State<CreateEventPage> {
         _dateTimeController.text.isNotEmpty &&
         _price.text.isNotEmpty &&
         _theme.text.isNotEmpty &&
-        _days.text.isNotEmpty &&
-        _hours.text.isNotEmpty &&
-        _minutes.text.isNotEmpty &&
+        (_days.text.isNotEmpty || _hours.text.isNotEmpty || (_hours.text.isNotEmpty && _minutes.text.isNotEmpty)) &&
         _name2Controller.text.isNotEmpty &&
         _phoneController.text.isNotEmpty &&
         _emailController.text.isNotEmpty) {
       try {
-        String? userId = FirebaseAuth.instance.currentUser?.uid;
-        String createdBy = userId ?? 'Unknown User';
-        String communityId = widget.communityId;
-        String googleFormLink = _googleFormLinkController.text;
-        if (!Uri.tryParse(googleFormLink)!.hasAbsolutePath ?? true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Invalid Google Form link")),
-          );
+        String googleFormLink = _googleFormLinkController.text.trim();
+        if (googleFormLink.isNotEmpty && !Uri.tryParse(googleFormLink)!.hasAbsolutePath) {
+          showSnackBar(context, "Invalid Google Form link");
           return;
         }
 
+        SharedPreferencesProvider sp=SharedPreferencesProvider();
+        String userId=sp.currentUid;
+        String communityId = widget.communityId;
+        
+
         // Prepare the event data
         Map<String, dynamic> eventData = {
-          'title': _nameController.text,
-          'description': _descController.text,
-          'location': _locationController.text,
-          'dateTime': DateTime.parse(_dateTimeController
-              .text), // Use current time or set specific time
-          'created_at': FieldValue.serverTimestamp(),
-          'created_by': createdBy,
+          'title': _nameController.text.trim(),
+          'description': _descController.text.trim(),
+          'location': _locationController.text.trim(),
+          'dateTime': dateTime, // Use current time or set specific time
+          'created_by': userId,
           'community_id': communityId,
-          'price': _price.text, // Example price
+          'price': int.parse(_price.text.trim()), // Example price
           'peopleRegistered': 0, // Example number of people registered
           'theme': _theme.text, // Example theme
-          'postTime': DateTime.now().millisecondsSinceEpoch,
-          // Timestamp for post time
-          'duration': {'hours': 1},
+          'postTime': DateTime.now().microsecondsSinceEpoch,
           'googleFormUrl': googleFormLink,
           'duration': {
             'days': int.tryParse(_days.text) ?? 0,
@@ -126,9 +110,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
             'minutes': int.tryParse(_minutes.text) ?? 0,
           },
           "contacts": {
-            "name": _name2Controller.text,
-            "email": _emailController.text,
-            "phone": _phoneController.text
+            "name": _name2Controller.text.trim(),
+            "email": _emailController.text.trim(),
+            "phone": int.parse(_phoneController.text.trim())
           }
 
           // Example duration in hours
@@ -137,14 +121,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
 
         // If image is selected, upload it to Firebase Storage and add the URL
         String? imageUrl;
-        if (_filePickerResult != null) {
-          File imageFile = File(_filePickerResult!.files.first.path!);
-          String imagePath =
-              'event_images/${DateTime.now().millisecondsSinceEpoch}.jpg';
-          UploadTask uploadTask =
-              FirebaseStorage.instance.ref(imagePath).putFile(imageFile);
-          TaskSnapshot snapshot = await uploadTask;
-          imageUrl = await snapshot.ref.getDownloadURL();
+        if (_image != null) {
+          //File imageFile = File(_filePickerResult!.files.first.path!);
+          await fp.uploadImageToStorage("event", _image!).then((url)=> imageUrl=url);
         }
 
         // Add image URL to the event data if available
@@ -153,61 +132,58 @@ class _CreateEventPageState extends State<CreateEventPage> {
         }
 
         // Store event data in Firestore
-        await firestore.collection('events').add(eventData);
+        await fp.createEvent(eventData);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Event Created!")),
-        );
-
+        showSnackBar(context, "Event Created!");
+        Map<String,dynamic> community={};
+        await fp.fetchCommunity(widget.communityId).then((c)=>community=c);
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => CommunityScreen(community: community, isOwner: true,)),
           (route) => false,
         );
       } catch (e) {
         print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to create event")),
-        );
+        showSnackBar(context, "Failed to create event");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("All details are required")),
-      );
+      showSnackBar(context, "All details are required");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Create Event"),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 50),
-            const Text(
-              "Create Event",
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 25),
             GestureDetector(
-              onTap: _openFilePicker,
+              onTap: selectImage,
               child: Container(
                 width: double.infinity,
-                height: MediaQuery.of(context).size.height * .3,
+                height: _image != null
+                    ? MediaQuery.of(context).size.height * .3
+                    : 60,
                 decoration: BoxDecoration(
                   // color: Colors.green[100],
+                  border: Border.all(
+                      color: Theme.of(context).colorScheme.secondaryContainer),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: _filePickerResult != null
+                child: _image != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.file(
-                          File(_filePickerResult!.files.first.path!),
+                          //File(_filePickerResult!.files.first.path!),
+                          _image!,
                           fit: BoxFit.fill,
                         ),
                       )
-                    : Column(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
                           Icon(Icons.add_a_photo_outlined,
@@ -257,35 +233,52 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 readOnly: true,
                 onTap: () => _selectDateTime(context)),
             const SizedBox(height: 8),
-            _buildTextField(
-              controller: _days,
-              icon: Icons.lock_clock_outlined,
-              label: "days",
-              hint: "Enter number of days",
-              // readOnly: true,
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                      controller: _days,
+                      icon: Icons.lock_clock_outlined,
+                      label: "days",
+                      hint: "Enter number of days",
+                      keyboardType: TextInputType.number
+                      // readOnly: true,
+                      ),
+                ),
+                SizedBox(width: 8.0),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _hours,
+                    icon: Icons.lock_clock_outlined,
+                    label: "hours",
+                    hint: "Enter number of hours",
+                    keyboardType: TextInputType.number,
+                    // readOnly: true,
+                  ),
+                ),
+                SizedBox(width: 8.0),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _minutes,
+                    icon: Icons.lock_clock_outlined,
+                    label: "Minutes",
+                    hint: "Enter number of minutes",
+                    keyboardType: TextInputType.number,
+                    // readOnly: true,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            _buildTextField(
-              controller: _hours,
-              icon: Icons.lock_clock_outlined,
-              label: "hours",
-              hint: "Enter number of hours",
-              // readOnly: true,
-            ),
+            const SizedBox(height: 8),
             const SizedBox(height: 8),
             _buildTextField(
-              controller: _minutes,
-              icon: Icons.lock_clock_outlined,
-              label: "Minutes",
-              hint: "Enter number of minutes",
-              // readOnly: true,
+              controller: _price,
+              icon: Icons.money_rounded,
+              label: "Price",
+              hint: "Registration cost",
+              keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 8),
-            _buildTextField(
-                controller: _price,
-                icon: Icons.money_rounded,
-                label: "Price",
-                hint: "Registration cost"),
             const SizedBox(height: 8),
             _buildTextField(
                 controller: _name2Controller,
@@ -293,54 +286,46 @@ class _CreateEventPageState extends State<CreateEventPage> {
                 label: "Contact Name",
                 hint: "Enter Contact Name"),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.phone),
-                labelText: 'Phone',
-                hintText: 'Enter contact phone number',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Phone number is required';
+            _buildTextField(
+                controller: _phoneController,
+                icon: Icons.phone,
+                label: 'Phone',
+                hint: 'Enter contact phone number',
+                keyboardType: TextInputType.number,
+                onEditingComplete: () {
+                var value=_phoneController.text.trim();
+                if (value.trim().isEmpty) {
+                  showSnackBar(context, 'Phone number is required') ;
                 }
                 if (!RegExp(r'^\+?[0-9]{7,15}$').hasMatch(value)) {
-                  return 'Enter a valid phone number';
+                  showSnackBar(context, 'Enter a valid phone number');
                 }
-                return null;
               },
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.email_outlined),
-                labelText: 'Email',
-                hintText: 'Enter contact email',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Email is required';
+            const SizedBox(height: 8),
+            _buildTextField(
+                controller: _emailController,
+                icon: Icons.email_outlined,
+                label: "Email",
+                hint: "Enter Contact Email",
+                keyboardType: TextInputType.emailAddress,
+                onEditingComplete: () {
+                var value=_emailController.text.trim();
+                if (value.trim().isEmpty) {
+                  showSnackBar(context, 'Email is required') ;
                 }
                 if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                  return 'Enter a valid email address';
+                  showSnackBar(context, 'Enter a valid email address') ;
                 }
-                return null;
               },
-            ),
+                ),
             const SizedBox(height: 8),
             _buildTextField(
               controller: _googleFormLinkController,
               icon: Icons.link,
               label: "Google Form",
               hint: "Enter the Google Form URL for registration",
-              // keyboardType: TextInputType.text,
+              keyboardType: TextInputType.url,
             ),
             SizedBox(
               height: 50,
@@ -373,12 +358,18 @@ class _CreateEventPageState extends State<CreateEventPage> {
     required String label,
     required String hint,
     int maxLines = 1,
+    int minLines = 1,
     bool readOnly = false,
     GestureTapCallback? onTap,
+    TextInputType keyboardType = TextInputType.text,
+    void Function()? onEditingComplete,
   }) {
     return TextField(
       controller: controller,
+      keyboardType: keyboardType,
+      onEditingComplete: onEditingComplete,
       maxLines: maxLines,
+      minLines: minLines,
       readOnly: readOnly,
       onTap: onTap,
       decoration: InputDecoration(

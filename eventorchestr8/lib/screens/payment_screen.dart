@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/home_screen.dart';
 import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
@@ -18,7 +19,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
-    final ticketFee = int.parse(widget.event["price"]);
+    final ticketFee = widget.event["price"];
     final double convienceFee = ticketFee * 0.1;
     final double amount = ticketFee + convienceFee;
     return Scaffold(
@@ -66,7 +67,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '${formattedDate2(widget.event["dateTime"])} | ${formattedTime2(widget.event["dateTime"])}',
+                          '${widget.event['dateTime'].runtimeType ==Timestamp?
+                                        formattedDate2(
+                                            widget.event['dateTime']):formattedDate(
+                                            widget.event['dateTime'])} | ${widget.event['dateTime'].runtimeType ==Timestamp?formattedTime2(
+                                          widget.event['dateTime']):formattedTime(
+                                          widget.event['dateTime'])}',
                           style: TextStyle(
                             fontSize: 16,
                             //color: Colors.blue[800],

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/dashed_divider.dart';
 import 'package:eventorchestr8/widgets/label_style.dart';
@@ -187,7 +188,9 @@ class _TicketScreenState extends State<TicketScreen> {
                                       ),
                                     ),
                                     Text(
-                                      formattedDate2(widget.event["dateTime"]),
+                                      widget.event['dateTime'].runtimeType ==Timestamp?formattedDate2(
+                                          widget.event['dateTime']):formattedDate(
+                                          widget.event['dateTime']),
                                       style: ValueStyle().copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -243,7 +246,9 @@ class _TicketScreenState extends State<TicketScreen> {
                                       ),
                                     ),
                                     Text(
-                                      formattedTime2(widget.event["dateTime"]),
+                                      widget.event['dateTime'].runtimeType ==Timestamp?formattedTime2(
+                                          widget.event['dateTime']):formattedTime(
+                                          widget.event['dateTime']),
                                       style: ValueStyle().copyWith(
                                         color: Theme.of(context)
                                             .colorScheme

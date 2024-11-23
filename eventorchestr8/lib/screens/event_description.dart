@@ -55,9 +55,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
             bottom: MediaQuery.of(context).size.height * 0.5,
             child: FadeInImage(
               placeholder: AssetImage(
-                  'assets/images/transparent.png'), // Placeholder image
-              image: NetworkImage(
-                  widget.event['imageUrl']), // Replace with your image asset
+                  'assets/images/transparent_image.png'), // Placeholder image
+              image:widget.event['imageUrl']!=null || widget.event['imageUrl']==""? NetworkImage(
+                  widget.event['imageUrl']):AssetImage(
+                  'assets/images/transparent_image.png'), // Replace with your image asset
               fit: BoxFit.fill,
             ),
           ),
@@ -90,40 +91,44 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.event['title'],
-                                  style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    _launchURL(widget.event['location']);
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                        size: 15,
-                                      ),
-                                      Text(
-                                        widget.event['location'],
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary),
-                                      ),
-                                    ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.event['title'],
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                ),
-                              ],
+                                  GestureDetector(
+                                    onTap: () {
+                                      _launchURL(widget.event['location']);
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on_outlined,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          size: 15,
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            widget.event['location'],
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             Chip(
                               shape: RoundedRectangleBorder(
@@ -149,7 +154,9 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         width: 5,
                                       ),
                                       Text(
+                                        widget.event['dateTime'].runtimeType ==Timestamp?
                                         formattedDate2(
+                                            widget.event['dateTime']):formattedDate(
                                             widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
                                       ),
@@ -161,7 +168,9 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text(formattedTime2(
+                                      Text(
+                                        widget.event['dateTime'].runtimeType ==Timestamp?formattedTime2(
+                                          widget.event['dateTime']):formattedTime(
                                           widget.event['dateTime'])),
                                     ],
                                   ),
@@ -303,8 +312,12 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                               "Could not open the Google Form.");
                                         }
                                       } else {
-                                        showSnackBar(context,
-                                            "No Google Form URL provided for this event.");
+                                        Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PaymentScreen(
+                                                      event: widget.event),
+                                            ));
                                       }
                                     } else {
                                       Navigator.of(context).push(
@@ -318,7 +331,7 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                                     },
                                                     icon:
                                                         Icon(Icons.arrow_back)),
-                                            amount: double.parse(widget
+                                            amount: int.parse(widget
                                                     .event["price"]
                                                     .toString()) *
                                                 1.1,
@@ -336,9 +349,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                 if (!widget.isRegistered)
                                   CountdownTimer(
                                     endTime:
+                                         widget.event['dateTime'].runtimeType ==Timestamp?
                                         (widget.event["dateTime"] as Timestamp)
                                             .toDate()
-                                            .millisecondsSinceEpoch,
+                                            .millisecondsSinceEpoch : DateTime.fromMicrosecondsSinceEpoch(widget.event['dateTime'] as int).millisecondsSinceEpoch ,
                                     widgetBuilder: (_, time) {
                                       if (time == null) {
                                         return Text('Registration closed');

@@ -28,7 +28,7 @@ class SharedPreferencesProvider extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userCredentialJson = prefs.getString('user_credential_model')!;
     String userDetailJson = prefs.getString('user_detail_model')!;
-
+    print(userDetailJson);
     _userCredential = jsonDecode(userCredentialJson);
     _userDetails = jsonDecode(userDetailJson);
   }
@@ -69,9 +69,21 @@ class SharedPreferencesProvider extends ChangeNotifier {
     _isLoading=true;
     notifyListeners();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> owned_communites=_userDetails["owned_communities"]??[];
+    List<dynamic> owned_communites=_userDetails["owned_communities"]??[];
     owned_communites.add(community_id);
     _userDetails["owned_communities"]=owned_communites;
+    await prefs.setString('user_detail_model', jsonEncode(userDetails));
+    _isLoading=false;
+    notifyListeners();
+  }
+
+  Future<void> createEvent(String event_id) async {
+    _isLoading=true;
+    notifyListeners();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<dynamic> events=_userDetails["events"]??[];
+    events.add(event_id);
+    _userDetails["events"]=events;
     await prefs.setString('user_detail_model', jsonEncode(userDetails));
     _isLoading=false;
     notifyListeners();

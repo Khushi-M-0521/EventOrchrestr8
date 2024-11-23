@@ -153,8 +153,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                         final postDate = formattedDate(event['postTime']);
                         final postTime = formattedTime(event['postTime']);
                         bool showDateCard = index == events.length - 1 ||
-                            formattedTime((events[index + 1]['postTime'])) !=
+                            formattedDate((events[index + 1]['postTime'])) !=
                                 postDate;
+                        print(formattedDate(1731917404989));
                         print(postTime);
                         print(postDate);
 
@@ -195,8 +196,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                             child: FadeInImage(
                                               placeholder: AssetImage(
                                                   'assets/images/transparent_image.png'),
-                                              image: NetworkImage(
-                                                  event["imageUrl"]),
+                                              image: event["imageUrl"]!="" && event["imageUrl"]!=null? NetworkImage(
+                                                  event["imageUrl"]):AssetImage(
+                                                  'assets/images/transparent_image.png'),
                                               fit: BoxFit.fill,
                                               height: 100,
                                               width: 100,
@@ -244,7 +246,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                                 if (!widget.isOwner)
                                                   const SizedBox(height: 5),
                                                 Text(
-                                                  '${formattedDate2(event['dateTime'])} | ${formattedTime2(event['dateTime'])} | ${formatDuration2(_castToIntMap(event['duration']))}',
+                                                  '${event['dateTime'].runtimeType ==Timestamp?formattedDate2(
+                                          event['dateTime']):formattedDate(
+                                          event['dateTime'])} | ${event['dateTime'].runtimeType ==Timestamp?formattedTime2(
+                                          event['dateTime']):formattedTime(
+                                          event['dateTime'])} | ${formatDuration2(_castToIntMap(event['duration']))}',
                                                   style: ValueStyle().copyWith(
                                                     fontWeight: FontWeight.w600,
                                                   ),

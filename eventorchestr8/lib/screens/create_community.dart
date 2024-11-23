@@ -18,6 +18,7 @@ class CommunityForm extends StatefulWidget {
 class _CommunityFormState extends State<CommunityForm> {
   final _formKey = GlobalKey<FormState>();
   late FirebaseProvider fp;
+  var isLoading = false;
 
   // Controllers for each input field
   final TextEditingController _nameController = TextEditingController();
@@ -36,6 +37,8 @@ class _CommunityFormState extends State<CommunityForm> {
   @override
   void initState() {
     fp = FirebaseProvider();
+    isLoading =
+        Provider.of<SharedPreferencesProvider>(context, listen: true).isLoading;
     super.initState();
   }
 
@@ -55,6 +58,9 @@ class _CommunityFormState extends State<CommunityForm> {
   }
 
   Future<void> _createCommunity() async {
+    setState(() {
+      isLoading = true;
+    });
     if (_nameController.text.isNotEmpty &&
         _descriptionController.text.isNotEmpty &&
         _taglineController.text.isNotEmpty &&
@@ -70,35 +76,46 @@ class _CommunityFormState extends State<CommunityForm> {
         String imageUrl = await fp.uploadImageToStorage("community", _image!);
 
         // Add community data to Firestore along with the user ID
-        fp.createCommunity({
-          'name': _nameController.text,
-          'description': _descriptionController.text,
-          'members': _members,
-          'tagline': _taglineController.text,
-          'tags':
-              _tagsController.text.split(',').map((tag) => tag.trim()).toList(),
-          'created_at': FieldValue.serverTimestamp(),
-          'created_by': userId, // Store the user ID who created the community
-          'imageUrl': imageUrl, // Store image URL
-          'joined_by': null, // Add joined_by field with null value initially
-        }).timeout(Duration(seconds: 10)).then((_) {
-            showSnackBar(context, "Community Created!");
-          Navigator.of(context).pop();
-        });
+        fp
+            .createCommunity({
+              'name': _nameController.text,
+              'description': _descriptionController.text,
+              'members': _members,
+              'tagline': _taglineController.text,
+              'tags': _tagsController.text
+                  .split(',')
+                  .map((tag) => tag.trim())
+                  .toList(),
+              'created_at': FieldValue.serverTimestamp(),
+              'created_by':
+                  userId, // Store the user ID who created the community
+              'imageUrl': imageUrl, // Store image URL
+              'joined_by':
+                  null, // Add joined_by field with null value initially
+            })
+            .timeout(Duration(seconds: 10))
+            .then((_) {
+              showSnackBar(context, "Community Created!");
+              setState(() {
+                isLoading = false;
+              });
+              Navigator.of(context).pop();
+            });
       } catch (e) {
         showSnackBar(context, "Failed to create Community $e");
       }
     } else {
       showSnackBar(context, "Missing details or no image selected");
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final Color borderColor = Theme.of(context).colorScheme.outline;
-    var isLoading =
-        Provider.of<SharedPreferencesProvider>(context, listen: true).isLoading;
-    print("isloading= "+isLoading.toString());
+    print("isloading= " + isLoading.toString());
     return Scaffold(
       appBar: AppBar(
         //automaticallyImplyLeading: false,
@@ -114,128 +131,129 @@ class _CommunityFormState extends State<CommunityForm> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             )
-          :Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 4,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                shrinkWrap: true,
-                children: <Widget>[
-                  Text(
-                    "Community Details",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  // Image picker button
-                  GestureDetector(
-                    onTap: selectImage,
-                    child: Container(
-                      height: _image == null
-                          ? 50
-                          : 200, // Increased height for better visibility
-                      width: double.infinity, // Make it occupy full width
-                      decoration: BoxDecoration(
-                        border: Border.all(color: borderColor),
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors
-                            .grey[200], // Background color for better contrast
-                      ),
-                      child: _image == null
-                          ? Center(
-                              child: Text(
-                                'Pick an image',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                            )
-                          : ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(8), // Rounded corners
-                              child: Image.file(
-                                _image!,
-                                width:
-                                    double.infinity, // Fit to container width
-                                height: 200, // Fit to container height
-                                fit: BoxFit
-                                    .fill, // Ensure the image scales properly
-                              ),
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: <Widget>[
+                        Text(
+                          "Community Details",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        // Image picker button
+                        GestureDetector(
+                          onTap: selectImage,
+                          child: Container(
+                            height: _image == null
+                                ? 50
+                                : 200, // Increased height for better visibility
+                            width: double.infinity, // Make it occupy full width
+                            decoration: BoxDecoration(
+                              border: Border.all(color: borderColor),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.grey[
+                                  200], // Background color for better contrast
                             ),
-                    ),
-                  ),
+                            child: _image == null
+                                ? Center(
+                                    child: Text(
+                                      'Pick an image',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                    ),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                        8), // Rounded corners
+                                    child: Image.file(
+                                      _image!,
+                                      width: double
+                                          .infinity, // Fit to container width
+                                      height: 200, // Fit to container height
+                                      fit: BoxFit
+                                          .fill, // Ensure the image scales properly
+                                    ),
+                                  ),
+                          ),
+                        ),
 
-                  SizedBox(height: 20),
-                  _buildTextField(
-                    label: 'Community Name',
-                    icon: Icons.group,
-                    borderColor: borderColor,
-                    controller: _nameController,
-                  ),
-                  _buildTextField(
-                    label: 'Tagline',
-                    icon: Icons.short_text,
-                    borderColor: borderColor,
-                    controller: _taglineController,
-                  ),
-                  _buildTextField(
-                    label: 'Tags (comma-separated)',
-                    icon: Icons.label,
-                    borderColor: borderColor,
-                    controller: _tagsController,
-                  ),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                      labelStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: borderColor),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                        SizedBox(height: 20),
+                        _buildTextField(
+                          label: 'Community Name',
+                          icon: Icons.group,
+                          borderColor: borderColor,
+                          controller: _nameController,
+                        ),
+                        _buildTextField(
+                          label: 'Tagline',
+                          icon: Icons.short_text,
+                          borderColor: borderColor,
+                          controller: _taglineController,
+                        ),
+                        _buildTextField(
+                          label: 'Tags (comma-separated)',
+                          icon: Icons.label,
+                          borderColor: borderColor,
+                          controller: _tagsController,
+                        ),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            labelText: 'Description',
+                            labelStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: borderColor),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: borderColor),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          minLines: 1,
+                          maxLines: 4,
+                        ),
+                        SizedBox(height: 30),
+                        ElevatedButton.icon(
+                          onPressed: _createCommunity,
+                          icon: Icon(Icons.check),
+                          label: Text('Create Community'),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            textStyle: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    minLines: 1,
-                    maxLines: 4,
                   ),
-                  SizedBox(height: 30),
-                  ElevatedButton.icon(
-                    onPressed: _createCommunity,
-                    icon: Icon(Icons.check),
-                    label: Text('Create Community'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      textStyle:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

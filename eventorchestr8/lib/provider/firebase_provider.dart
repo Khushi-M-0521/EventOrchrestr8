@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 class FirebaseProvider extends ChangeNotifier {
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
-  bool _isLoading=false;
+  bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   void updateDocument(
@@ -63,9 +63,10 @@ class FirebaseProvider extends ChangeNotifier {
     return downloadUrl;
   }
 
-Future<String> uploadImageToStorage(String collection, File image) async {
+  Future<String> uploadImageToStorage(String collection, File image) async {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference storageRef = _firebaseStorage.ref().child('${collection}_images/$fileName');
+    Reference storageRef =
+        _firebaseStorage.ref().child('${collection}_images/$fileName');
 
     // Upload the image to Firebase Storage
     UploadTask uploadTask = storageRef.putFile(image);
@@ -76,18 +77,20 @@ Future<String> uploadImageToStorage(String collection, File image) async {
     // Get the image URL after upload
     String downloadUrl = await snapshot.ref.getDownloadURL();
     return downloadUrl;
-}
+  }
 
   Future<List<Map<String, dynamic>>> fetchEvents() async {
     try {
       // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('events').orderBy("postTime", descending: true).get();
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('events')
+          .orderBy("postTime", descending: true)
+          .get();
 
       // Extract community data from Firestore documents
       return snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print("Error fetching events: $e");
       return [];
@@ -97,13 +100,15 @@ Future<String> uploadImageToStorage(String collection, File image) async {
   Future<List<Map<String, dynamic>>> fetchCommunities() async {
     try {
       // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('communities').orderBy("created_at",descending: true).get();
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('communities')
+          .orderBy("created_at", descending: true)
+          .get();
 
       // Extract community data from Firestore documents
       return snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print("Error fetching communities: $e");
       return [];
@@ -113,13 +118,16 @@ Future<String> uploadImageToStorage(String collection, File image) async {
   Future<List<Map<String, dynamic>>> fetchPopularEvents() async {
     try {
       // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('events').orderBy("peopleRegistered", descending: true).limit(5).get();
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('events')
+          .orderBy("peopleRegistered", descending: true)
+          .limit(5)
+          .get();
 
       // Extract community data from Firestore documents
       return snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print("Error fetching events: $e");
       return [];
@@ -129,16 +137,19 @@ Future<String> uploadImageToStorage(String collection, File image) async {
   Future<List<Map<String, dynamic>>> fetchPopularCommunities() async {
     try {
       // Fetch communities from Firestore
-      final QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('communities').orderBy("members",descending: true).limit(5).get();
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('communities')
+          .orderBy("members", descending: true)
+          .limit(5)
+          .get();
       print(snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList());
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList());
 
       // Extract community data from Firestore documents
       return snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       print("Error fetching communities: $e");
       return [];
@@ -146,32 +157,73 @@ Future<String> uploadImageToStorage(String collection, File image) async {
   }
 
   Future<void> createCommunity(Map<String, dynamic> community) async {
-    _isLoading=true;
+    _isLoading = true;
     notifyListeners();
-    String communityId='';
-    await _firebaseFirestore.collection("communities").add(community).then((community){
-      communityId=community.id;
-      SharedPreferencesProvider sp=SharedPreferencesProvider();
+    String communityId = '';
+    await _firebaseFirestore
+        .collection("communities")
+        .add(community)
+        .then((community) {
+      communityId = community.id;
+      SharedPreferencesProvider sp = SharedPreferencesProvider();
       sp.createCommunity(communityId);
-      print("1"+communityId);
     });
-    print("2"+communityId);
-    DocumentReference docRef= _firebaseFirestore.collection("user_details").doc(community["created_by"] as String);
+    DocumentReference docRef = _firebaseFirestore
+        .collection("user_details")
+        .doc(community["created_by"] as String);
     docRef.update({
-      "owned_communities":FieldValue.arrayUnion([communityId])
+      "owned_communities": FieldValue.arrayUnion([communityId])
     });
 
-    _isLoading=false;
+    _isLoading = false;
     notifyListeners();
   }
 
   Future<Map<String, dynamic>> fetchCommunity(String communityId) async {
-    DocumentReference docRef= await _firebaseFirestore.collection("communities").doc(communityId);
-    docRef.get().then((doc){
+    DocumentReference docRef =
+        _firebaseFirestore.collection("communities").doc(communityId);
+    try {
+      DocumentSnapshot doc = await docRef.get();
       print(communityId);
       print(doc.data());
       return doc.data() as Map<String, dynamic>;
+    } catch (e) {
+      print("Error fetching community: $e");
+      return {};
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOwnedCommunities(
+      List<dynamic> communityIds) async {
+    List<Map<String, dynamic>> communities = [];
+    await Future.forEach(communityIds, (communityId) async {
+      var community = await fetchCommunity(communityId);
+      communities.add(community);
+      print(communities);
     });
-    return {};
-  }  
+    return communities;
+  }
+
+  Future<void> createEvent(Map<String, dynamic> event) async {
+    _isLoading = true;
+    notifyListeners();
+    String eventId = '';
+    await _firebaseFirestore
+        .collection("events")
+        .add(event)
+        .then((event) {
+      eventId = event.id;
+      SharedPreferencesProvider sp = SharedPreferencesProvider();
+      sp.createEvent(eventId);
+    });
+    DocumentReference docRef = _firebaseFirestore
+        .collection("commmunities")
+        .doc(event["community_id"] as String);
+    docRef.update({
+      "events": FieldValue.arrayUnion([eventId])
+    });
+
+    _isLoading = false;
+    notifyListeners();
+  }
 }

@@ -20,9 +20,9 @@ class CommunityListTile extends StatelessWidget {
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
-          child: FadeInImage.assetNetwork(
-            placeholder: 'assets/images/transparent_image.png',
-            image: imageUrl,
+          child: FadeInImage(
+            placeholder: AssetImage('assets/images/transparent_image.png'),
+            image: NetworkImage(imageUrl),
             width: 60,
             height: 60,
             fit: BoxFit.cover,

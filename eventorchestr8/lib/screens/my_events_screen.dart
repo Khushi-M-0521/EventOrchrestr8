@@ -36,8 +36,8 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           final data = doc.data() as Map<String, dynamic>;
           return {
             ...data,
-            'dateTime': (data['dateTime'] as Timestamp)
-                .toDate(), // Always convert Timestamp to DateTime
+            'dateTime': data['dateTime'].runtimeType ==Timestamp? (data['dateTime'] as Timestamp)
+                .toDate():DateTime.fromMicrosecondsSinceEpoch(data['dateTime'] as int) , // Always convert Timestamp to DateTime
           };
         }).toList();
       });

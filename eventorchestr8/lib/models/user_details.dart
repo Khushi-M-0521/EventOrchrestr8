@@ -3,12 +3,14 @@ class UserDetailModel {
   String name;
   String profilePicture;
   int age;
+  List? owned_communities;
 
   UserDetailModel( {
     required this.uid,
     required this.name,
     required this.profilePicture,
     required this.age,
+    this.owned_communities,
   });
 
   factory UserDetailModel.fromMap(Map<String, dynamic> map) {
@@ -17,6 +19,7 @@ class UserDetailModel {
       name: map['name']??'',
       profilePicture: map['profilePicture']??'',
       age: map['age']??'',
+      owned_communities: map['owned_communities']??'',
     );
   }
 
@@ -26,6 +29,7 @@ class UserDetailModel {
       "name": name,
       "profilePicture":profilePicture,
       "age":age,
+      "owned_communities":owned_communities,
     };
   }
 }

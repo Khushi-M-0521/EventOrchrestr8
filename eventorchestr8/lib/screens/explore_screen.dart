@@ -250,7 +250,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               membersCount: popular[index]["members"] as int,
                             )
                           : PopularEventCard(
-                              imageUrl: popular[index]["imageUrl"] as String,
+                              imageUrl: (popular[index]["imageUrl"]!=null? popular[index]["imageUrl"] as String:""),
                               title: popular[index]["title"] as String,
                               location: popular[index]["location"] as String,
                               peopleRegistered:

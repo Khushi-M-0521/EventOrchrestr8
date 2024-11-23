@@ -31,24 +31,24 @@ String formattedDate(int dateTime) => DateFormat('d MMM, yyyy')
     .format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
 String formattedTime(int dateTime) =>
     DateFormat('h:mm a').format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
-// String formattedDay(int dateTime) =>
-//     DateFormat('d').format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
-// String formattedMonth(int dateTime) =>
-//     DateFormat('MMM').format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
-// String formattedYear(int dateTime) =>
-//     DateTime.now().year != DateTime.fromMicrosecondsSinceEpoch(dateTime).year
-//         ? ', ${DateTime.fromMicrosecondsSinceEpoch(dateTime).year}'
-//         : '';
+String formattedDay(int dateTime) =>
+    DateFormat('d').format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
+String formattedMonth(int dateTime) =>
+    DateFormat('MMM').format(DateTime.fromMicrosecondsSinceEpoch(dateTime));
+String formattedYear(int dateTime) =>
+    DateTime.now().year != DateTime.fromMicrosecondsSinceEpoch(dateTime).year
+        ? ', ${DateTime.fromMicrosecondsSinceEpoch(dateTime).year}'
+        : '';
 // Function to format the day
-String formattedDay(Timestamp dateTime) =>
+String formattedDay2(Timestamp dateTime) =>
     DateFormat('d').format(dateTime.toDate());
 
 // Function to format the month
-String formattedMonth(Timestamp dateTime) =>
+String formattedMonth2(Timestamp dateTime) =>
     DateFormat('MMM').format(dateTime.toDate());
 
 // Function to format the year (optional display for different years)
-String formattedYear(Timestamp dateTime) {
+String formattedYear2(Timestamp dateTime) {
   DateTime date = dateTime.toDate();
   return DateTime.now().year != date.year ? ', ${date.year}' : '';
 }
@@ -70,7 +70,7 @@ Map<String, int> _castToIntMap(dynamic duration) {
 
 String formattedDate2(Timestamp timestamp) {
   DateTime dateTime = timestamp.toDate(); // Convert to DateTime
-  return DateFormat('MMMM dd, yyyy')
+  return DateFormat('d MMM, yyyy')
       .format(dateTime); // Format as "November 30, 2024"
 }
 

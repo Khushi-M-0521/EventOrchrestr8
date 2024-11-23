@@ -53,19 +53,13 @@ class _MyCommunitiesScreenState extends State<MyCommunitiesScreen> {
   Future<void> _fetchOwnedCommunities() async {
     SharedPreferencesProvider sp = SharedPreferencesProvider();
     FirebaseProvider fp = FirebaseProvider();
-    List<Map<String, dynamic>> communities = [];
-    print(sp.userDetails["owned_communities"]);
+    print(sp.userDetails);
+    print("really "+sp.userDetails["owned_communities"].toString());
     if (sp.userDetails["owned_communities"] != null) {
-      for (var communityId
-          in (sp.userDetails["owned_communities"] as List<dynamic>)) {
-        await fp.fetchCommunity(communityId).then((community) {
-          communities.add(community);
-          print(communities);
-          setState(() {
+      await fp.fetchOwnedCommunities(sp.userDetails["owned_communities"] as List<dynamic>).then((communities)=> setState(() {
             ownedCommunities = communities;
-          });
-        });
-      }
+          }));// Print each community after it is fetched (for debugging) 
+      
     }
 
     // User? user = FirebaseAuth.instance.currentUser;
