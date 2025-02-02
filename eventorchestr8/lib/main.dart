@@ -7,6 +7,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,8 @@ Future<void> main() async {
   firebaseAppCheck.activate(
     androidProvider: AndroidProvider.playIntegrity,
   );
+  await dotenv.load();
+  print("Environment variables loaded"); // Debugging line
 
   runApp(const MyApp());
 }
