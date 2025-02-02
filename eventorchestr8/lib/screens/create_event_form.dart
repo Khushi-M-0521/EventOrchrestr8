@@ -1,6 +1,7 @@
 import 'package:eventorchestr8/provider/firebase_provider.dart';
 import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
-import 'package:eventorchestr8/screens/specific_community_screen.dart';
+import 'package:eventorchestr8/screens/home_screen.dart';
+//import 'package:eventorchestr8/screens/specific_community_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
@@ -75,7 +76,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
         _dateTimeController.text.isNotEmpty &&
         _price.text.isNotEmpty &&
         _theme.text.isNotEmpty &&
-        (_days.text.isNotEmpty || _hours.text.isNotEmpty || (_hours.text.isNotEmpty && _minutes.text.isNotEmpty)) &&
+        (_days.text.isNotEmpty || _hours.text.isNotEmpty ||  _minutes.text.isNotEmpty) &&
         _name2Controller.text.isNotEmpty &&
         _phoneController.text.isNotEmpty &&
         _emailController.text.isNotEmpty) {
@@ -135,19 +136,18 @@ class _CreateEventPageState extends State<CreateEventPage> {
         await fp.createEvent(eventData);
 
         showSnackBar(context, "Event Created!");
-        Map<String,dynamic> community={};
-        await fp.fetchCommunity(widget.communityId).then((c)=>community=c);
+        // Map<String,dynamic> community={};
+        // await fp.fetchCommunity(widget.communityId).then((c)=>community=c);
+        // print(eventData);
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => CommunityScreen(community: community, isOwner: true,)),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
           (route) => false,
         );
       } catch (e) {
         print(e);
         showSnackBar(context, "Failed to create event");
       }
-    } else {
-      showSnackBar(context, "All details are required");
-    }
+    } 
   }
 
   @override

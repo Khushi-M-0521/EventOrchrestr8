@@ -1,4 +1,5 @@
 // import 'package:eventorchestr8/constants/example_events.dart';
+import 'package:eventorchestr8/screens/analytics_screen.dart';
 import 'package:eventorchestr8/screens/community_description_screen.dart';
 import 'package:eventorchestr8/screens/create_event_form.dart';
 import 'package:eventorchestr8/screens/event_description.dart';
@@ -84,6 +85,40 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  void _handleMenuItem(String value) {
+      _showCancelDialog(value);
+  }
+
+  void _showCancelDialog(String leave_close) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$leave_close Confirmation'),
+          content: Text('Are you sure you want to ${leave_close.toLowerCase()} it?'),
+          actions: [
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Close the dialog and handle the cancel action
+                // Add your cancel action here
+                print('Action closed');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,7 +147,23 @@ class _CommunityScreenState extends State<CommunityScreen> {
             ],
           ),
         ),
-        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.more_vert))],
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            onSelected: _handleMenuItem,
+            itemBuilder: (BuildContext context) {
+              return [
+                widget.isOwner? PopupMenuItem<String>(
+                  value: 'Close',
+                  child: Text('Close'),
+                ):PopupMenuItem<String>(
+                  value: 'Leave',
+                  child: Text('Leave'),
+                ),
+              ];
+            },
+            icon: Icon(Icons.more_vert),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -196,9 +247,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                             child: FadeInImage(
                                               placeholder: AssetImage(
                                                   'assets/images/transparent_image.png'),
-                                              image: event["imageUrl"]!="" && event["imageUrl"]!=null? NetworkImage(
-                                                  event["imageUrl"]):AssetImage(
-                                                  'assets/images/transparent_image.png'),
+                                              image: event["imageUrl"] != "" &&
+                                                      event["imageUrl"] != null
+                                                  ? NetworkImage(
+                                                      event["imageUrl"])
+                                                  : AssetImage(
+                                                      'assets/images/transparent_image.png'),
                                               fit: BoxFit.fill,
                                               height: 100,
                                               width: 100,
@@ -246,11 +300,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                                 if (!widget.isOwner)
                                                   const SizedBox(height: 5),
                                                 Text(
-                                                  '${event['dateTime'].runtimeType ==Timestamp?formattedDate2(
-                                          event['dateTime']):formattedDate(
-                                          event['dateTime'])} | ${event['dateTime'].runtimeType ==Timestamp?formattedTime2(
-                                          event['dateTime']):formattedTime(
-                                          event['dateTime'])} | ${formatDuration2(_castToIntMap(event['duration']))}',
+                                                  '${event['dateTime'].runtimeType == Timestamp ? formattedDate2(event['dateTime']) : formattedDate(event['dateTime'])} | ${event['dateTime'].runtimeType == Timestamp ? formattedTime2(event['dateTime']) : formattedTime(event['dateTime'])} | ${formatDuration2(_castToIntMap(event['duration']))}',
                                                   style: ValueStyle().copyWith(
                                                     fontWeight: FontWeight.w600,
                                                   ),
@@ -286,6 +336,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                             FilledButton(
                                               onPressed: () {
                                                 // View Stats
+                                                Navigator.of(context).push(MaterialPageRoute(builder: (context)=> AnalyticsScreen()));
                                               },
                                               child: Text('View Stats'),
                                             ),

@@ -58,9 +58,10 @@ dependencies:
   qr_code_scanner_plus: ^2.0.6
   crypto: ^3.0.6
   encrypt: ^5.0.3
-  http: ^1.2.2
-  web3dart: ^2.3.0
+  fl_chart: ^0.69.2
+  web3dart: ^2.7.3
   flutter_dotenv: ^5.2.1
+  http: ^1.2.2
 
 
 dependency_overrides:

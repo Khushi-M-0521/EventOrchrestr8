@@ -81,12 +81,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     color: isValid ? Colors.green : Colors.red,
                     size: 200,
                   ),
-                  SizedBox(height: 20),
-                  if(isValid)
-                  Text(
-                    scannedUsername ?? 'Unknown User',
-                    style: TextStyle(color: Colors.white, fontSize: 24),
-                  ),
+                  // SizedBox(height: 20),
+                  // if(isValid)
+                  // Text(
+                  //   scannedUsername ?? 'Unknown User',
+                  //   style: TextStyle(color: Colors.white, fontSize: 24),
+                  // ),
                 ],
               ),
             ),

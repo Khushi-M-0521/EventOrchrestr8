@@ -6,7 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart'; // Import Firebase Stor
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:provider/provider.dart';
+//import 'package:provider/provider.dart';
 
 class CommunityForm extends StatefulWidget {
   const CommunityForm({super.key});
@@ -37,8 +37,8 @@ class _CommunityFormState extends State<CommunityForm> {
   @override
   void initState() {
     fp = FirebaseProvider();
-    isLoading =
-        Provider.of<SharedPreferencesProvider>(context, listen: true).isLoading;
+    //isLoading =
+      //  Provider.of<SharedPreferencesProvider>(context, listen: true).isLoading;
     super.initState();
   }
 

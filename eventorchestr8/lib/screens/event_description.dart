@@ -53,6 +53,36 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
     };
   }
 
+   void _showCancelDialog(String leave_close) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$leave_close Confirmation'),
+          content: Text('Are you sure you want to ${leave_close.toLowerCase()} it?'),
+          actions: [
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Close the dialog and handle the cancel action
+                // Add your cancel action here
+                print('Action closed');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     print(widget.event);
@@ -79,6 +109,23 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(left: MediaQuery.sizeOf(context).width-50),
+            child: SafeArea(
+              child: widget.isRegistered?PopupMenuButton<String>(
+              onSelected: _showCancelDialog,
+              itemBuilder: (BuildContext context) {
+                return [
+                  PopupMenuItem<String>(
+                    value: 'Cancel',
+                    child: Text('Cancel'),
+                  ),
+                ];
+              },
+              icon: Icon(Icons.more_vert,color: Colors.white,),
+            ):SizedBox(),
             ),
           ),
           // Draggable container

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:eventorchestr8/provider/shared_preferences_provider.dart';
 import 'package:eventorchestr8/utils/utils.dart';
 import 'package:eventorchestr8/widgets/dashed_divider.dart';
 import 'package:eventorchestr8/widgets/label_style.dart';
@@ -66,6 +67,9 @@ class _TicketScreenState extends State<TicketScreen> {
   @override
   Widget build(BuildContext context) {
     SecureScreen.enableSecureScreen();
+    SharedPreferencesProvider sp = SharedPreferencesProvider();
+    Map<String, dynamic> userData = sp.getUserData();
+    String name = userData['name'];
     return Scaffold(
       appBar: AppBar(
         leading: widget.leadingWidgetToPreviousScreen,
@@ -286,7 +290,7 @@ class _TicketScreenState extends State<TicketScreen> {
                               ),
                             ),
                             Text(
-                              'John Doe',
+                              name,
                               style: LabelStyle().copyWith(
                                 color: Theme.of(context).colorScheme.onPrimary,
                               ),
@@ -305,7 +309,7 @@ class _TicketScreenState extends State<TicketScreen> {
                               ),
                             ),
                             Text(
-                              '₹${widget.amount}',
+                              '₹${widget.amount.toStringAsFixed(2)}',
                               style: LabelStyle().copyWith(
                                 color: Theme.of(context).colorScheme.onPrimary,
                               ),
