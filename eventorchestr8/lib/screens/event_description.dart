@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/payment_screen.dart';
 import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
+import 'package:eventorchestr8/utils/block_creation.dart';
+import 'package:eventorchestr8/utils/data_generation.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -20,6 +22,13 @@ class EventDescriptionScreen extends StatefulWidget {
 }
 
 class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
+  final data = DataGenerator.generateData();
+  late String eventId = data["eventId"];
+  late String userId = data["userId"];
+  late String uuid = data["uuid"];
+  late int price = data["price"];
+  int paymentId = DateTime.now().millisecondsSinceEpoch;
+
   void _launchURL(String location) async {
     final Uri url = Uri.parse(
         'https://www.google.com/maps/search/?api=1&query=Bangalore, $location');
@@ -56,9 +65,11 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
             child: FadeInImage(
               placeholder: AssetImage(
                   'assets/images/transparent_image.png'), // Placeholder image
-              image:widget.event['imageUrl']!=null || widget.event['imageUrl']==""? NetworkImage(
-                  widget.event['imageUrl']):AssetImage(
-                  'assets/images/transparent_image.png'), // Replace with your image asset
+              image: widget.event['imageUrl'] != null ||
+                      widget.event['imageUrl'] == ""
+                  ? NetworkImage(widget.event['imageUrl'])
+                  : AssetImage(
+                      'assets/images/transparent_image.png'), // Replace with your image asset
               fit: BoxFit.fill,
             ),
           ),
@@ -154,10 +165,12 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         width: 5,
                                       ),
                                       Text(
-                                        widget.event['dateTime'].runtimeType ==Timestamp?
-                                        formattedDate2(
-                                            widget.event['dateTime']):formattedDate(
-                                            widget.event['dateTime']),
+                                        widget.event['dateTime'].runtimeType ==
+                                                Timestamp
+                                            ? formattedDate2(
+                                                widget.event['dateTime'])
+                                            : formattedDate(
+                                                widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     ],
@@ -168,10 +181,13 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text(
-                                        widget.event['dateTime'].runtimeType ==Timestamp?formattedTime2(
-                                          widget.event['dateTime']):formattedTime(
-                                          widget.event['dateTime'])),
+                                      Text(widget.event['dateTime']
+                                                  .runtimeType ==
+                                              Timestamp
+                                          ? formattedTime2(
+                                              widget.event['dateTime'])
+                                          : formattedTime(
+                                              widget.event['dateTime'])),
                                     ],
                                   ),
                                   Text(
@@ -276,6 +292,14 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                   onPressed: () async {
                                     if (!widget.isRegistered) {
                                       // Only proceed if the user is not yet registered
+
+                                      TicketingWorkflow().handleRegistration(
+                                          context,
+                                          eventId,
+                                          userId,
+                                          uuid,
+                                          price,
+                                          paymentId);
                                       if (widget.event
                                               .containsKey('googleFormUrl') &&
                                           widget.event['googleFormUrl'] !=
@@ -313,11 +337,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         }
                                       } else {
                                         Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                              builder: (context) =>
-                                                  PaymentScreen(
-                                                      event: widget.event),
-                                            ));
+                                            .push(MaterialPageRoute(
+                                          builder: (context) => PaymentScreen(
+                                              event: widget.event),
+                                        ));
                                       }
                                     } else {
                                       Navigator.of(context).push(
@@ -348,11 +371,16 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                 ),
                                 if (!widget.isRegistered)
                                   CountdownTimer(
-                                    endTime:
-                                         widget.event['dateTime'].runtimeType ==Timestamp?
-                                        (widget.event["dateTime"] as Timestamp)
+                                    endTime: widget.event['dateTime']
+                                                .runtimeType ==
+                                            Timestamp
+                                        ? (widget.event["dateTime"]
+                                                as Timestamp)
                                             .toDate()
-                                            .millisecondsSinceEpoch : DateTime.fromMicrosecondsSinceEpoch(widget.event['dateTime'] as int).millisecondsSinceEpoch ,
+                                            .millisecondsSinceEpoch
+                                        : DateTime.fromMicrosecondsSinceEpoch(
+                                                widget.event['dateTime'] as int)
+                                            .millisecondsSinceEpoch,
                                     widgetBuilder: (_, time) {
                                       if (time == null) {
                                         return Text('Registration closed');
