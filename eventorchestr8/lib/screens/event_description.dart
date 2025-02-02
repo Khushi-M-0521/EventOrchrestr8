@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:eventorchestr8/screens/payment_screen.dart';
 import 'package:eventorchestr8/screens/ticket_screen.dart';
 import 'package:eventorchestr8/utils/utils.dart';
-import 'package:eventorchestr8/utils/block_creation.dart';
 import 'package:eventorchestr8/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -57,11 +56,9 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
             child: FadeInImage(
               placeholder: AssetImage(
                   'assets/images/transparent_image.png'), // Placeholder image
-              image: widget.event['imageUrl'] != null ||
-                      widget.event['imageUrl'] == ""
-                  ? NetworkImage(widget.event['imageUrl'])
-                  : AssetImage(
-                      'assets/images/transparent_image.png'), // Replace with your image asset
+              image:widget.event['imageUrl']!=null || widget.event['imageUrl']==""? NetworkImage(
+                  widget.event['imageUrl']):AssetImage(
+                  'assets/images/transparent_image.png'), // Replace with your image asset
               fit: BoxFit.fill,
             ),
           ),
@@ -157,12 +154,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                         width: 5,
                                       ),
                                       Text(
-                                        widget.event['dateTime'].runtimeType ==
-                                                Timestamp
-                                            ? formattedDate2(
-                                                widget.event['dateTime'])
-                                            : formattedDate(
-                                                widget.event['dateTime']),
+                                        widget.event['dateTime'].runtimeType ==Timestamp?
+                                        formattedDate2(
+                                            widget.event['dateTime']):formattedDate(
+                                            widget.event['dateTime']),
                                         style: TextStyle(fontSize: 10),
                                       ),
                                     ],
@@ -173,13 +168,10 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primary),
-                                      Text(widget.event['dateTime']
-                                                  .runtimeType ==
-                                              Timestamp
-                                          ? formattedTime2(
-                                              widget.event['dateTime'])
-                                          : formattedTime(
-                                              widget.event['dateTime'])),
+                                      Text(
+                                        widget.event['dateTime'].runtimeType ==Timestamp?formattedTime2(
+                                          widget.event['dateTime']):formattedTime(
+                                          widget.event['dateTime'])),
                                     ],
                                   ),
                                   Text(
@@ -283,64 +275,68 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                 RoundedButton(
                                   onPressed: () async {
                                     if (!widget.isRegistered) {
-                                      final ticketingWorkflow =
-                                          TicketingWorkflow();
+                                      // Only proceed if the user is not yet registered
+                                      if (widget.event
+                                              .containsKey('googleFormUrl') &&
+                                          widget.event['googleFormUrl'] !=
+                                              null &&
+                                          widget.event['googleFormUrl']
+                                              .isNotEmpty) {
+                                        final Uri googleFormUrl = Uri.parse(
+                                            widget.event['googleFormUrl']);
 
-                                      // Get user details dynamically (Modify as needed)
-                                      String eventId = widget.event['id'];
-                                      String userId =
-                                          "user123"; // Fetch from Firebase Auth
-                                      int price = widget.event['price'];
-                                      int paymentId =
-                                          DateTime.now().millisecondsSinceEpoch;
+                                        try {
+                                          // Open the Google Form
+                                          await launchUrl(googleFormUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication);
 
-                                      // Generate QR Code String
-                                      String qrString = await ticketingWorkflow
-                                          .handleRegistration(
-                                              context,
-                                              eventId,
-                                              userId,
-                                              "uuid_placeholder",
-                                              price,
-                                              paymentId);
+                                          // Show instructions to the user
+                                          showSnackBar(context,
+                                              "After submitting the form, return to proceed with payment.");
 
-                                      if (qrString.isNotEmpty) {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) => TicketScreen(
-                                              leadingWidgetToPreviousScreen:
-                                                  IconButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                icon: Icon(Icons.arrow_back),
-                                              ),
-                                              amount: price.toDouble(),
-                                              event: widget.event,
-                                              qr: qrString,
-                                            ),
-                                          ),
-                                        );
+                                          // Wait for the user to come back (mock submission detection)
+                                          // In a real app, you may handle this with a custom thank-you page redirect
+                                          Future.delayed(Duration(seconds: 5),
+                                              () {
+                                            // Navigate to the payment screen
+                                            Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PaymentScreen(
+                                                      event: widget.event),
+                                            ));
+                                          });
+                                        } catch (e) {
+                                          showSnackBar(context,
+                                              "Could not open the Google Form.");
+                                        }
                                       } else {
-                                        showSnackBar(context,
-                                            "Ticket generation failed.");
+                                        Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PaymentScreen(
+                                                      event: widget.event),
+                                            ));
                                       }
                                     } else {
-                                      // If already registered, show existing ticket
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (context) => TicketScreen(
                                             leadingWidgetToPreviousScreen:
                                                 IconButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              icon: Icon(Icons.arrow_back),
-                                            ),
-                                            amount: widget.event["price"]
-                                                .toDouble(),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    icon:
+                                                        Icon(Icons.arrow_back)),
+                                            amount: int.parse(widget
+                                                    .event["price"]
+                                                    .toString()) *
+                                                1.1,
                                             event: widget.event,
-                                            qr: "existing_qr_placeholder", // Load from storage if already purchased
+                                            qr: 'h8j2k4l5m6n7o8p9q1r2s3t4u5v6w7x8y9z1a2b3c4d5e6f7g8h9j0',
                                           ),
                                         ),
                                       );
@@ -352,16 +348,11 @@ class _EventDescriptionScreenState extends State<EventDescriptionScreen> {
                                 ),
                                 if (!widget.isRegistered)
                                   CountdownTimer(
-                                    endTime: widget.event['dateTime']
-                                                .runtimeType ==
-                                            Timestamp
-                                        ? (widget.event["dateTime"]
-                                                as Timestamp)
+                                    endTime:
+                                         widget.event['dateTime'].runtimeType ==Timestamp?
+                                        (widget.event["dateTime"] as Timestamp)
                                             .toDate()
-                                            .millisecondsSinceEpoch
-                                        : DateTime.fromMicrosecondsSinceEpoch(
-                                                widget.event['dateTime'] as int)
-                                            .millisecondsSinceEpoch,
+                                            .millisecondsSinceEpoch : DateTime.fromMicrosecondsSinceEpoch(widget.event['dateTime'] as int).millisecondsSinceEpoch ,
                                     widgetBuilder: (_, time) {
                                       if (time == null) {
                                         return Text('Registration closed');
